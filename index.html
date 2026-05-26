@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0f0f0f">
+<title>Träningsdagbok</title>
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon.svg">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600&display=swap');
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #0f0f0f; --surface: #1a1a1a; --surface2: #242424; --border: #2e2e2e;
+    --accent: #c8f135; --accent-dim: #9ab82a; --text: #f0f0f0; --muted: #777;
+    --radius: 12px; --font: 'DM Sans', sans-serif; --mono: 'DM Mono', monospace;
+  }
+  html, body { background: var(--bg); color: var(--text); font-family: var(--font); min-height: 100vh; -webkit-font-smoothing: antialiased; }
+  header { position: sticky; top: 0; z-index: 100; background: var(--bg); border-bottom: 1px solid var(--border); padding: 16px 20px 12px; }
+  .header-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+  .logo { font-family: var(--mono); font-size: 13px; color: var(--accent); letter-spacing: .08em; text-transform: uppercase; }
+  .streak { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+  .day-tabs { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; -ms-overflow-style: none; }
+  .day-tabs::-webkit-scrollbar { display: none; }
+  .day-tab { flex-shrink: 0; padding: 7px 14px; border-radius: 999px; border: 1px solid var(--border); background: transparent; color: var(--muted); font-family: var(--font); font-size: 13px; font-weight: 500; cursor: pointer; transition: all .15s; white-space: nowrap; }
+  .day-tab.active { background: var(--accent); border-color: var(--accent); color: #0f0f0f; }
+  .day-tab.fullbody { border-color: #3a4a1a; color: #9ab82a; }
+  .day-tab.fullbody.active { background: var(--accent); border-color: var(--accent); color: #0f0f0f; }
+  .day-tab.food-tab { border-color: #4a2e1a; color: #c87835; }
+  .day-tab.food-tab.active { background: var(--accent); border-color: var(--accent); color: #0f0f0f; }
+  main { padding: 16px 16px 100px; }
+  .day-panel { display: none; }
+  .day-panel.active { display: block; }
+  .day-header { margin-bottom: 12px; }
+  .day-label { font-family: var(--mono); font-size: 11px; color: var(--accent); letter-spacing: .1em; text-transform: uppercase; margin-bottom: 4px; }
+  .day-name { font-size: 22px; font-weight: 600; color: var(--text); line-height: 1.2; }
+  .exercise-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; margin-bottom: 10px; }
+  .ex-header { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 12px; }
+  .ex-number { width: 24px; height: 24px; border-radius: 50%; background: var(--surface2); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; font-family: var(--mono); font-size: 11px; color: var(--muted); flex-shrink: 0; margin-top: 2px; }
+  .ex-name { font-size: 15px; font-weight: 500; color: var(--text); line-height: 1.2; }
+  .ex-sets-info { font-size: 12px; color: var(--muted); font-family: var(--mono); margin-top: 2px; }
+  .badge { display: inline-block; font-size: 10px; font-family: var(--mono); padding: 2px 7px; border-radius: 999px; background: var(--surface2); color: var(--accent-dim); border: 1px solid #3a3a3a; margin-top: 4px; }
+  .sets-grid-header { display: grid; grid-template-columns: 32px 1fr 1fr; gap: 6px; margin-bottom: 6px; }
+  .col-label { font-size: 11px; color: var(--muted); font-family: var(--mono); letter-spacing: .05em; text-transform: uppercase; text-align: center; }
+  .sets-grid { display: grid; grid-template-columns: 32px 1fr 1fr; gap: 6px; align-items: center; }
+  .set-num { font-family: var(--mono); font-size: 12px; color: var(--muted); text-align: center; }
+  .set-input { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 9px 8px; font-family: var(--mono); font-size: 15px; color: var(--text); text-align: center; width: 100%; outline: none; transition: border-color .15s; -webkit-appearance: none; appearance: none; }
+  .set-input::placeholder { color: #444; }
+  .set-input:focus { border-color: var(--accent); }
+  .set-input.filled { border-color: #3a3a3a; color: var(--accent); }
+  .save-row { margin-top: 12px; display: flex; align-items: center; justify-content: space-between; }
+  .clear-btn { background: transparent; border: 1px solid var(--border); border-radius: 8px; padding: 9px 14px; font-family: var(--font); font-size: 13px; color: var(--muted); cursor: pointer; }
+  .saved-indicator { font-family: var(--mono); font-size: 12px; color: var(--accent-dim); opacity: 0; transition: opacity .3s; }
+  .saved-indicator.show { opacity: 1; }
+  .tip { margin: 4px 0 16px; padding: 10px 14px; background: var(--surface); border-left: 2px solid var(--accent); font-size: 13px; color: var(--muted); line-height: 1.5; }
+  .food-intro { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; margin-bottom: 16px; }
+  .food-intro-title { font-size: 17px; font-weight: 600; color: var(--text); margin-bottom: 6px; }
+  .food-intro-text { font-size: 13px; color: var(--muted); line-height: 1.6; }
+  .macro-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 16px; }
+  .macro-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px; }
+  .macro-num { font-family: var(--mono); font-size: 22px; font-weight: 500; color: var(--accent); }
+  .macro-unit { font-family: var(--mono); font-size: 12px; color: var(--accent-dim); }
+  .macro-label { font-size: 12px; color: var(--muted); margin-top: 4px; }
+  .food-section-title { font-family: var(--mono); font-size: 11px; color: var(--accent); letter-spacing: .1em; text-transform: uppercase; margin: 20px 0 10px; }
+  .food-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; margin-bottom: 8px; display: flex; align-items: flex-start; gap: 12px; }
+  .food-icon { font-size: 24px; flex-shrink: 0; width: 36px; text-align: center; }
+  .food-name { font-size: 15px; font-weight: 500; color: var(--text); margin-bottom: 3px; }
+  .food-desc { font-size: 13px; color: var(--muted); line-height: 1.5; }
+  .food-macro-row { display: flex; gap: 8px; margin-top: 6px; flex-wrap: wrap; }
+  .food-badge { font-size: 11px; font-family: var(--mono); padding: 2px 8px; border-radius: 999px; border: 1px solid; }
+  .food-badge.prot { color: #c8f135; border-color: #3a4a1a; background: #1a2410; }
+  .food-badge.carb { color: #f1a335; border-color: #4a3a1a; background: #241e10; }
+  .food-badge.fat  { color: #a3c8f1; border-color: #1a3a4a; background: #101c24; }
+  .meal-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; margin-bottom: 8px; }
+  .meal-time { font-family: var(--mono); font-size: 11px; color: var(--accent); letter-spacing: .08em; margin-bottom: 6px; }
+  .meal-name { font-size: 15px; font-weight: 500; color: var(--text); margin-bottom: 4px; }
+  .meal-items { font-size: 13px; color: var(--muted); line-height: 1.7; }
+  .tip-food { margin: 0 0 16px; padding: 10px 14px; background: var(--surface); border-left: 2px solid #c87835; font-size: 13px; color: var(--muted); line-height: 1.5; }
+  .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: var(--bg); border-top: 1px solid var(--border); padding: 10px 16px 20px; display: flex; gap: 8px; }
+  .nav-btn { flex: 1; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 12px 8px; font-family: var(--font); font-size: 12px; font-weight: 500; color: var(--muted); cursor: pointer; text-align: center; }
+  .nav-btn.active { background: var(--surface2); border-color: var(--accent); color: var(--accent); }
+  .nav-icon { font-size: 18px; display: block; margin-bottom: 3px; }
+</style>
+</head>
+<body>
+<header>
+  <div class="header-top">
+    <span class="logo">// Träning</span>
+    <span class="streak" id="streak-display"></span>
+  </div>
+  <div class="day-tabs" id="day-tabs"></div>
+</header>
+<main id="main-content"></main>
+<div class="bottom-nav">
+  <button class="nav-btn active" onclick="setView('log')"><span class="nav-icon">📋</span>Logg</button>
+  <button class="nav-btn" onclick="setView('history')"><span class="nav-icon">📈</span>Historik</button>
+</div>
+<script>
+var DAYS = [
+  {
+    name:"Bröst & triceps", day:"Dag 1 — Måndag", shortTab:"Dag 1 · Bröst",
+    tip:"Öka vikten 2–5 kg när du klarar övre repgränsen stabilt i alla set.",
+    exercises:[
+      {name:"Bänkpress (skivstång)", sets:4, reps:"6–8", rest:"2–3 min"},
+      {name:"Lutande hantelpress", sets:4, reps:"8–10", rest:"90 sek", badge:"Övre bröst"},
+      {name:"Kabelflugor", sets:3, reps:"12–15", rest:"60 sek", badge:"Isolering"},
+      {name:"Dips (viktad)", sets:3, reps:"8–12", rest:"90 sek"},
+      {name:"Triceps pushdown (kabel)", sets:3, reps:"12–15", rest:"60 sek"},
+      {name:"Overhead triceps extension", sets:3, reps:"10–12", rest:"60 sek", badge:"Lång huvud"}
+    ]
+  },
+  {
+    name:"Rygg & biceps", day:"Dag 2 — Tisdag", shortTab:"Dag 2 · Rygg",
+    tip:"Dra med armbågarna, inte händerna. Betona excentrisk fas 2–3 sek ned.",
+    exercises:[
+      {name:"Marklyft", sets:4, reps:"4–6", rest:"3 min"},
+      {name:"Viktad chins / latsdrag", sets:4, reps:"6–10", rest:"2 min", badge:"Bredd"},
+      {name:"Skivstångsrowing (Pendlay)", sets:4, reps:"8–10", rest:"90 sek", badge:"Tjocklek"},
+      {name:"Kabelsittande rowing", sets:3, reps:"12–15", rest:"60 sek"},
+      {name:"Skivstångscurl", sets:3, reps:"8–10", rest:"90 sek"},
+      {name:"Hammer curl (hantel)", sets:3, reps:"10–12", rest:"60 sek", badge:"Brachialis"}
+    ]
+  },
+  {
+    name:"Ben & core", day:"Dag 3 — Torsdag", shortTab:"Dag 3 · Ben",
+    tip:"Tyngsta passet. Gå minst till parallellt i knäböj om rörligheten tillåter.",
+    exercises:[
+      {name:"Knäböj (skivstång)", sets:5, reps:"4–6", rest:"3 min"},
+      {name:"Romanian deadlift", sets:4, reps:"8–10", rest:"2 min", badge:"Hamstring"},
+      {name:"Benpress", sets:3, reps:"10–12", rest:"90 sek"},
+      {name:"Leg curl (maskin)", sets:3, reps:"12–15", rest:"60 sek"},
+      {name:"Stående vadpress", sets:4, reps:"15–20", rest:"60 sek"},
+      {name:"Ab wheel / plankan", sets:3, reps:"10–15 / 45 sek", rest:"60 sek", badge:"Core"}
+    ]
+  },
+  {
+    name:"Axlar & armar", day:"Dag 4 — Fredag", shortTab:"Dag 4 · Axlar",
+    tip:"Sidolyft: lyft bara till axelhöjd — högre tar bort spänningen från deltoiden.",
+    exercises:[
+      {name:"Militärpress (skivstång)", sets:4, reps:"6–8", rest:"2 min"},
+      {name:"Hantelpress sittande", sets:3, reps:"10–12", rest:"90 sek"},
+      {name:"Sidolyft (hantel)", sets:4, reps:"15–20", rest:"60 sek", badge:"Sidodelt"},
+      {name:"Face pulls (kabel)", sets:3, reps:"15–20", rest:"60 sek", badge:"Bakre delt"},
+      {name:"Koncentrationscurl", sets:3, reps:"12–15", rest:"60 sek"},
+      {name:"Skull crushers (EZ-stång)", sets:3, reps:"10–12", rest:"60 sek", badge:"Triceps"}
+    ]
+  },
+  {
+    name:"Helkropp A", day:"Helkropp — Pass A", shortTab:"Helkropp A", fullbody:true,
+    tip:"Kör 2–3 reps från failure. Bra komplement till 4-dagarsspliten eller som eget 2-dagarsprogram.",
+    exercises:[
+      {name:"Knäböj (skivstång)", sets:4, reps:"5–6", rest:"3 min", badge:"Ben & glutes"},
+      {name:"Bänkpress (skivstång)", sets:4, reps:"6–8", rest:"2 min", badge:"Bröst & triceps"},
+      {name:"Skivstångsrowing", sets:4, reps:"6–8", rest:"2 min", badge:"Rygg & biceps"},
+      {name:"Militärpress (hantel)", sets:3, reps:"10–12", rest:"90 sek", badge:"Axlar"},
+      {name:"Romanian deadlift", sets:3, reps:"10–12", rest:"90 sek", badge:"Hamstring"},
+      {name:"Sidolyft (hantel)", sets:3, reps:"15–20", rest:"60 sek", badge:"Sidodelt"},
+      {name:"Plankan / ab wheel", sets:3, reps:"30–45 sek", rest:"60 sek", badge:"Core"}
+    ]
+  },
+  {
+    name:"Helkropp B", day:"Helkropp — Pass B", shortTab:"Helkropp B", fullbody:true,
+    tip:"Variera övningarna mot pass A för att träffa musklerna från olika vinklar.",
+    exercises:[
+      {name:"Frontknäböj / goblet squat", sets:4, reps:"8–10", rest:"2 min", badge:"Quad & core"},
+      {name:"Marklyft", sets:4, reps:"4–6", rest:"3 min", badge:"Helkropp"},
+      {name:"Lutande hantelpress", sets:4, reps:"8–10", rest:"90 sek", badge:"Övre bröst"},
+      {name:"Chins / latsdrag", sets:4, reps:"6–10", rest:"2 min", badge:"Bredd rygg"},
+      {name:"Bulgariansk utfall (hantel)", sets:3, reps:"10–12 / ben", rest:"90 sek", badge:"Ben & glutes"},
+      {name:"Face pulls (kabel)", sets:3, reps:"15–20", rest:"60 sek", badge:"Bakre delt"},
+      {name:"Skivstångscurl + triceps pushdown", sets:3, reps:"10–12", rest:"60 sek", badge:"Armar superset"}
+    ]
+  },
+  { name:"Mat & näring", day:"", shortTab:"🥩 Mat", food:true }
+];
+
+var FOOD_HTML = '<div>' +
+  '<div class="day-header"><div class="day-label">Kost för snickare</div><div class="day-name">Mat & näring</div></div>' +
+  '<div class="food-intro"><div class="food-intro-title">Anpassat för ditt jobb 💪</div><div class="food-intro-text">Som snickare förbrukar du redan mycket energi på jobbet. Du behöver extra kolhydrater för att orka hela dagen OCH ha energi till gymmet. Sikta på 2 g protein per kg kroppsvikt och generöst med kolhydrater.</div></div>' +
+  '<div class="macro-grid"><div class="macro-card"><div class="macro-num">2 <span class="macro-unit">g/kg</span></div><div class="macro-label">Protein per dag</div></div><div class="macro-card"><div class="macro-num">4–5 <span class="macro-unit">g/kg</span></div><div class="macro-label">Kolhydrater per dag</div></div><div class="macro-card"><div class="macro-num">5–6</div><div class="macro-label">Mål per dag</div></div><div class="macro-card"><div class="macro-num">+400<span class="macro-unit"> kcal</span></div><div class="macro-label">Överskott för tillväxt</div></div></div>' +
+  '<div class="food-section-title">Bästa proteinkällorna</div>' +
+  '<div class="food-card"><div class="food-icon">🍗</div><div><div class="food-name">Kycklingfilé</div><div class="food-desc">Mager, billig och mångsidig. Grilla en stor sats på söndagen — räcker hela veckan.</div><div class="food-macro-row"><span class="food-badge prot">31g protein/100g</span><span class="food-badge fat">låg fett</span></div></div></div>' +
+  '<div class="food-card"><div class="food-icon">🥚</div><div><div class="food-name">Ägg</div><div class="food-desc">Perfekt frukost eller mellanmål. 3–4 ägg ger bra protein och håller dig mätt länge på jobbet.</div><div class="food-macro-row"><span class="food-badge prot">13g protein/100g</span><span class="food-badge fat">bra fetter</span></div></div></div>' +
+  '<div class="food-card"><div class="food-icon">🐟</div><div><div class="food-name">Lax & makrill</div><div class="food-desc">Fet fisk ger omega-3 som minskar inflammation — viktigt när kroppen sliter både på jobb och i gymmet.</div><div class="food-macro-row"><span class="food-badge prot">20–25g protein/100g</span><span class="food-badge fat">omega-3</span></div></div></div>' +
+  '<div class="food-card"><div class="food-icon">🥩</div><div><div class="food-name">Nötkött / färs</div><div class="food-desc">Bra protein och kreatin som finns naturligt. Köttbullar eller köttfärssås är enkelt att laga i stor sats.</div><div class="food-macro-row"><span class="food-badge prot">26g protein/100g</span><span class="food-badge fat">järn & zink</span></div></div></div>' +
+  '<div class="food-card"><div class="food-icon">🫙</div><div><div class="food-name">Kvarg & kesella</div><div class="food-desc">Perfekt kvällsmål. Caseinprotein bryts ned långsamt — matar musklerna hela natten.</div><div class="food-macro-row"><span class="food-badge prot">10–12g protein/100g</span></div></div></div>' +
+  '<div class="food-section-title">Bästa kolhydratkällorna</div>' +
+  '<div class="food-card"><div class="food-icon">🍚</div><div><div class="food-name">Ris</div><div class="food-desc">Snickararens bästa vän. Koka 4–5 portioner på en gång, funkar till allt och ger stabil energi hela dagen.</div><div class="food-macro-row"><span class="food-badge carb">28g kolhydrater/100g kokt</span></div></div></div>' +
+  '<div class="food-card"><div class="food-icon">🥣</div><div><div class="food-name">Havregryn</div><div class="food-desc">Bästa frukosten — långsamma kolhydrater som håller energin uppe hela förmiddagen på bygget.</div><div class="food-macro-row"><span class="food-badge carb">60g kolhydrater/100g</span><span class="food-badge prot">13g protein/100g</span></div></div></div>' +
+  '<div class="food-card"><div class="food-icon">🍞</div><div><div class="food-name">Fullkornsbröd</div><div class="food-desc">Enkelt och smidigt. Ta med smörgåsar med kycklingskiva eller ägg till jobbet.</div><div class="food-macro-row"><span class="food-badge carb">40g kolhydrater/100g</span></div></div></div>' +
+  '<div class="food-card"><div class="food-icon">🥔</div><div><div class="food-name">Potatis & sötpotatis</div><div class="food-desc">Billigt, mättande och fullt av kolhydrater. Sötpotatis ger också bra vitaminer för återhämtning.</div><div class="food-macro-row"><span class="food-badge carb">17–20g kolhydrater/100g</span></div></div></div>' +
+  '<div class="food-card"><div class="food-icon">🍌</div><div><div class="food-name">Banan</div><div class="food-desc">Perfekt innan gymmet eller som rast på jobbet. Snabba kolhydrater + kalium mot kramper.</div><div class="food-macro-row"><span class="food-badge carb">23g kolhydrater/st</span></div></div></div>' +
+  '<div class="food-section-title">Exempel — dagsmeny för snickare</div>' +
+  '<div class="tip-food">Anpassa portionsstorlekarna efter din kroppsvikt. Är du 80 kg siktar du på ca 160g protein och 320–400g kolhydrater per dag.</div>' +
+  '<div class="meal-card"><div class="meal-time">06:00 — Frukost</div><div class="meal-name">Havregrynsgröt med ägg</div><div class="meal-items">80g havregryn med mjölk · 3 ägg (scrambled) · 1 banan · kaffe</div></div>' +
+  '<div class="meal-card"><div class="meal-time">09:30 — Rast på jobbet</div><div class="meal-name">Smörgås & kvarg</div><div class="meal-items">2 skivor fullkornsbröd med kycklingskiva · 200g kvarg med lite honung</div></div>' +
+  '<div class="meal-card"><div class="meal-time">12:00 — Lunch</div><div class="meal-name">Ris med kyckling</div><div class="meal-items">200g kycklingfilé · 150g ris (kokt) · grönsaker · olivolja</div></div>' +
+  '<div class="meal-card"><div class="meal-time">15:00 — Rast / pre-workout</div><div class="meal-name">Snabb energi</div><div class="meal-items">1 banan · handfull nötter · eventuellt en proteinbar</div></div>' +
+  '<div class="meal-card"><div class="meal-time">17:30 — Efter gymmet</div><div class="meal-name">Stor middag</div><div class="meal-items">200g nötfärs eller lax · sötpotatis eller pasta · grönsaker · mjölk</div></div>' +
+  '<div class="meal-card"><div class="meal-time">21:00 — Kvällsmål</div><div class="meal-name">Långsamt protein</div><div class="meal-items">250g kesella eller kvarg · bär eller frukt · eventuellt lite nötter</div></div>' +
+'</div>';
+
+var currentDay=0, currentView='log';
+function sKey(di,ei,si,f){return 'gym_d'+di+'_e'+ei+'_s'+si+'_'+f;}
+function hKey(di,ei,si,f){var t=new Date().toISOString().split('T')[0];return 'gym_hist_'+t+'_d'+di+'_e'+ei+'_s'+si+'_'+f;}
+function saveVal(di,ei,si,f,v){try{localStorage.setItem(sKey(di,ei,si,f),v);localStorage.setItem(hKey(di,ei,si,f),v);}catch(e){}}
+function loadVal(di,ei,si,f){try{return localStorage.getItem(sKey(di,ei,si,f))||'';}catch(e){return '';}}
+
+function buildTabs(){
+  var c=document.getElementById('day-tabs');
+  c.innerHTML=DAYS.map(function(d,i){
+    var cls='day-tab'+(i===0?' active':'')+(d.fullbody?' fullbody':'')+(d.food?' food-tab':'');
+    return '<button class="'+cls+'" onclick="switchDay('+i+')">'+d.shortTab+'</button>';
+  }).join('');
+}
+
+function renderLog(){
+  var main=document.getElementById('main-content'), html='';
+  DAYS.forEach(function(day,di){
+    html+='<div class="day-panel'+(di===currentDay?' active':'')+'" id="panel-'+di+'">';
+    if(day.food){ html+=FOOD_HTML; }
+    else {
+      html+='<div class="day-header"><div class="day-label">'+day.day+'</div><div class="day-name">'+day.name+'</div></div><div class="tip">'+day.tip+'</div>';
+      day.exercises.forEach(function(ex,ei){
+        html+='<div class="exercise-card"><div class="ex-header"><div class="ex-number">'+(ei+1)+'</div><div><div class="ex-name">'+ex.name+'</div><div class="ex-sets-info">'+ex.sets+' set · '+ex.reps+' reps · '+ex.rest+' vila</div>'+(ex.badge?'<span class="badge">'+ex.badge+'</span>':'')+'</div></div>';
+        html+='<div class="sets-grid-header"><div class="col-label">Set</div><div class="col-label">Vikt (kg)</div><div class="col-label">Reps</div></div><div class="sets-grid">';
+        for(var s=0;s<ex.sets;s++){
+          var kg=loadVal(di,ei,s,'kg'),rp=loadVal(di,ei,s,'reps');
+          html+='<div class="set-num">'+(s+1)+'</div>';
+          html+='<input class="set-input'+(kg?' filled':'')+'" type="number" inputmode="decimal" placeholder="—" value="'+kg+'" data-day="'+di+'" data-ex="'+ei+'" data-set="'+s+'" data-field="kg" oninput="handleInput(this)">';
+          html+='<input class="set-input'+(rp?' filled':'')+'" type="number" inputmode="numeric" placeholder="—" value="'+rp+'" data-day="'+di+'" data-ex="'+ei+'" data-set="'+s+'" data-field="reps" oninput="handleInput(this)">';
+        }
+        html+='</div><div class="save-row"><button class="clear-btn" onclick="clearEx('+di+','+ei+')">Rensa</button><span class="saved-indicator" id="saved-'+di+'-'+ei+'">✓ sparat</span></div></div>';
+      });
+    }
+    html+='</div>';
+  });
+  main.innerHTML=html;
+}
+
+function renderHistory(){
+  var main=document.getElementById('main-content');
+  var html='<div style="padding-top:8px"><div style="font-family:var(--mono);font-size:11px;color:var(--accent);letter-spacing:.1em;text-transform:uppercase;margin-bottom:16px">Träningshistorik</div>';
+  var allKeys=[];
+  try{for(var i=0;i<localStorage.length;i++){var k=localStorage.key(i);if(k&&k.startsWith('gym_hist_'))allKeys.push(k);}}catch(e){}
+  var dates={};
+  allKeys.forEach(function(k){var p=k.split('_');var d=p[2];if(!dates[d])dates[d]=[];dates[d].push(k);});
+  var sorted=Object.keys(dates).sort().reverse();
+  if(!sorted.length){html+='<div style="color:var(--muted);font-size:14px;margin-top:40px;text-align:center">Inga sparade pass ännu.<br><br>Logga ditt första pass!</div>';}
+  else {
+    sorted.forEach(function(date){
+      html+='<div style="margin-bottom:20px"><div style="font-family:var(--mono);font-size:12px;color:var(--muted);margin-bottom:10px">'+formatDate(date)+'</div>';
+      var logged={};
+      dates[date].forEach(function(k){
+        var m=k.match(/gym_hist_[\d-]+_d(\d+)_e(\d+)_s(\d+)_(\w+)/);
+        if(!m)return;
+        var key2=m[1]+'_'+m[2]+'_'+m[3];
+        if(!logged[key2])logged[key2]={di:m[1],ei:m[2],si:m[3]};
+        try{logged[key2][m[4]]=localStorage.getItem(k);}catch(e){}
+      });
+      var grouped={};
+      Object.values(logged).forEach(function(e){var gk=e.di+'_'+e.ei;if(!grouped[gk])grouped[gk]={di:e.di,ei:e.ei,sets:[]};grouped[gk].sets.push(e);});
+      Object.values(grouped).forEach(function(g){
+        var day=DAYS[g.di];if(!day||day.food)return;
+        var ex=day.exercises&&day.exercises[g.ei];if(!ex)return;
+        html+='<div class="exercise-card" style="margin-bottom:8px"><div class="ex-name" style="margin-bottom:8px">'+ex.name+'</div>';
+        g.sets.sort(function(a,b){return a.si-b.si;}).forEach(function(s){
+          if(s.kg||s.reps)html+='<div style="display:flex;gap:8px;font-family:var(--mono);font-size:13px;color:var(--muted);margin-bottom:4px"><span style="color:#444">Set '+(parseInt(s.si)+1)+'</span>'+(s.kg?'<span style="color:var(--accent)">'+s.kg+' kg</span>':'')+' '+(s.reps?'<span>'+s.reps+' reps</span>':'')+'</div>';
+        });
+        html+='</div>';
+      });
+      html+='</div>';
+    });
+  }
+  main.innerHTML=html+'</div>';
+}
+
+function formatDate(d){return new Date(d+'T12:00:00').toLocaleDateString('sv-SE',{weekday:'long',day:'numeric',month:'long'});}
+function handleInput(el){
+  var di=el.dataset.day,ei=el.dataset.ex,si=el.dataset.set,f=el.dataset.field;
+  saveVal(di,ei,si,f,el.value);
+  el.classList.toggle('filled',!!el.value);
+  var ind=document.getElementById('saved-'+di+'-'+ei);
+  if(ind){ind.classList.add('show');setTimeout(function(){ind.classList.remove('show');},1500);}
+}
+function clearEx(di,ei){
+  var ex=DAYS[di].exercises[ei];
+  for(var s=0;s<ex.sets;s++){
+    try{localStorage.removeItem(sKey(di,ei,s,'kg'));localStorage.removeItem(sKey(di,ei,s,'reps'));}catch(e){}
+    ['kg','reps'].forEach(function(f){var el=document.querySelector('input[data-day="'+di+'"][data-ex="'+ei+'"][data-set="'+s+'"][data-field="'+f+'"]');if(el){el.value='';el.classList.remove('filled');}});
+  }
+}
+function switchDay(idx){
+  currentDay=idx;
+  document.querySelectorAll('.day-tab').forEach(function(t,i){t.classList.toggle('active',i===idx);});
+  document.querySelectorAll('.day-panel').forEach(function(p,i){p.classList.toggle('active',i===idx);});
+}
+function setView(view){
+  currentView=view;
+  document.querySelectorAll('.nav-btn').forEach(function(b,i){b.classList.toggle('active',(i===0&&view==='log')||(i===1&&view==='history'));});
+  if(view==='log')renderLog();else renderHistory();
+}
+function updateStreak(){
+  try{
+    var today=new Date().toISOString().split('T')[0];
+    var last=localStorage.getItem('gym_last_visit');
+    var streak=parseInt(localStorage.getItem('gym_streak')||'0');
+    if(last!==today){
+      var yesterday=new Date(Date.now()-86400000).toISOString().split('T')[0];
+      streak=last===yesterday?streak+1:1;
+      localStorage.setItem('gym_last_visit',today);
+      localStorage.setItem('gym_streak',streak);
+    }
+    if(streak>1)document.getElementById('streak-display').textContent='🔥 '+streak+' dagar';
+  }catch(e){}
+}
+
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('sw.js').catch(function(){});
+}
+
+buildTabs(); updateStreak(); renderLog();
+</script>
+</body>
+</html>
