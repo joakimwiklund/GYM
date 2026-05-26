@@ -19,21 +19,31 @@
     --radius: 12px; --font: 'DM Sans', sans-serif; --mono: 'DM Mono', monospace;
   }
   html, body { background: var(--bg); color: var(--text); font-family: var(--font); min-height: 100vh; -webkit-font-smoothing: antialiased; }
-  header { position: sticky; top: 0; z-index: 100; background: var(--bg); border-bottom: 1px solid var(--border); padding: 16px 20px 12px; }
-  .header-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+
+  /* TOP NAV */
+  header { position: sticky; top: 0; z-index: 100; background: var(--bg); border-bottom: 1px solid var(--border); padding: 14px 16px 0; }
+  .header-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
   .logo { font-family: var(--mono); font-size: 13px; color: var(--accent); letter-spacing: .08em; text-transform: uppercase; }
   .streak { font-family: var(--mono); font-size: 12px; color: var(--muted); }
-  .day-tabs { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; -ms-overflow-style: none; }
+
+  /* PROGRAM TABS (top level) */
+  .prog-tabs { display: flex; gap: 0; border-bottom: 1px solid var(--border); margin: 0 -16px; }
+  .prog-tab { flex: 1; padding: 10px 6px; font-family: var(--font); font-size: 12px; font-weight: 500; color: var(--muted); background: transparent; border: none; border-bottom: 2px solid transparent; cursor: pointer; transition: all .15s; text-align: center; white-space: nowrap; }
+  .prog-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+  /* DAY TABS (second level) */
+  .day-tabs-wrap { padding: 12px 16px 0; background: var(--bg); position: sticky; top: 89px; z-index: 99; border-bottom: 1px solid var(--border); }
+  .day-tabs { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; padding-bottom: 12px; }
   .day-tabs::-webkit-scrollbar { display: none; }
   .day-tab { flex-shrink: 0; padding: 7px 14px; border-radius: 999px; border: 1px solid var(--border); background: transparent; color: var(--muted); font-family: var(--font); font-size: 13px; font-weight: 500; cursor: pointer; transition: all .15s; white-space: nowrap; }
   .day-tab.active { background: var(--accent); border-color: var(--accent); color: #0f0f0f; }
-  .day-tab.fullbody { border-color: #3a4a1a; color: #9ab82a; }
-  .day-tab.fullbody.active { background: var(--accent); border-color: var(--accent); color: #0f0f0f; }
-  .day-tab.food-tab { border-color: #4a2e1a; color: #c87835; }
-  .day-tab.food-tab.active { background: var(--accent); border-color: var(--accent); color: #0f0f0f; }
+
   main { padding: 16px 16px 100px; }
+  .prog-panel { display: none; }
+  .prog-panel.active { display: block; }
   .day-panel { display: none; }
   .day-panel.active { display: block; }
+
   .day-header { margin-bottom: 12px; }
   .day-label { font-family: var(--mono); font-size: 11px; color: var(--accent); letter-spacing: .1em; text-transform: uppercase; margin-bottom: 4px; }
   .day-name { font-size: 22px; font-weight: 600; color: var(--text); line-height: 1.2; }
@@ -56,6 +66,8 @@
   .saved-indicator { font-family: var(--mono); font-size: 12px; color: var(--accent-dim); opacity: 0; transition: opacity .3s; }
   .saved-indicator.show { opacity: 1; }
   .tip { margin: 4px 0 16px; padding: 10px 14px; background: var(--surface); border-left: 2px solid var(--accent); font-size: 13px; color: var(--muted); line-height: 1.5; }
+
+  /* FOOD */
   .food-intro { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; margin-bottom: 16px; }
   .food-intro-title { font-size: 17px; font-weight: 600; color: var(--text); margin-bottom: 6px; }
   .food-intro-text { font-size: 13px; color: var(--muted); line-height: 1.6; }
@@ -79,6 +91,7 @@
   .meal-name { font-size: 15px; font-weight: 500; color: var(--text); margin-bottom: 4px; }
   .meal-items { font-size: 13px; color: var(--muted); line-height: 1.7; }
   .tip-food { margin: 0 0 16px; padding: 10px 14px; background: var(--surface); border-left: 2px solid #c87835; font-size: 13px; color: var(--muted); line-height: 1.5; }
+
   .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: var(--bg); border-top: 1px solid var(--border); padding: 10px 16px 20px; display: flex; gap: 8px; }
   .nav-btn { flex: 1; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 12px 8px; font-family: var(--font); font-size: 12px; font-weight: 500; color: var(--muted); cursor: pointer; text-align: center; }
   .nav-btn.active { background: var(--surface2); border-color: var(--accent); color: var(--accent); }
@@ -91,90 +104,154 @@
     <span class="logo">// Träning</span>
     <span class="streak" id="streak-display"></span>
   </div>
-  <div class="day-tabs" id="day-tabs"></div>
+  <div class="prog-tabs" id="prog-tabs"></div>
 </header>
+<div class="day-tabs-wrap" id="day-tabs-wrap">
+  <div class="day-tabs" id="day-tabs"></div>
+</div>
 <main id="main-content"></main>
 <div class="bottom-nav">
   <button class="nav-btn active" onclick="setView('log')"><span class="nav-icon">📋</span>Logg</button>
   <button class="nav-btn" onclick="setView('history')"><span class="nav-icon">📈</span>Historik</button>
 </div>
 <script>
-var DAYS = [
+var PROGRAMS = [
   {
-    name:"Bröst & triceps", day:"Dag 1 — Måndag", shortTab:"Dag 1 · Bröst",
-    tip:"Öka vikten 2–5 kg när du klarar övre repgränsen stabilt i alla set.",
-    exercises:[
-      {name:"Bänkpress (skivstång)", sets:4, reps:"6–8", rest:"2–3 min"},
-      {name:"Lutande hantelpress", sets:4, reps:"8–10", rest:"90 sek", badge:"Övre bröst"},
-      {name:"Kabelflugor", sets:3, reps:"12–15", rest:"60 sek", badge:"Isolering"},
-      {name:"Dips (viktad)", sets:3, reps:"8–12", rest:"90 sek"},
-      {name:"Triceps pushdown (kabel)", sets:3, reps:"12–15", rest:"60 sek"},
-      {name:"Overhead triceps extension", sets:3, reps:"10–12", rest:"60 sek", badge:"Lång huvud"}
+    id: 'p4',
+    label: '4 Dagars',
+    days: [
+      {
+        name:"Bröst & triceps", day:"Dag 1 — Måndag", shortTab:"Dag 1 · Bröst",
+        tip:"Öka vikten 2–5 kg när du klarar övre repgränsen stabilt i alla set.",
+        exercises:[
+          {name:"Bänkpress (skivstång)", sets:4, reps:"6–8", rest:"2–3 min"},
+          {name:"Lutande hantelpress", sets:4, reps:"8–10", rest:"90 sek", badge:"Övre bröst"},
+          {name:"Kabelflugor", sets:3, reps:"12–15", rest:"60 sek", badge:"Isolering"},
+          {name:"Dips (viktad)", sets:3, reps:"8–12", rest:"90 sek"},
+          {name:"Triceps pushdown (kabel)", sets:3, reps:"12–15", rest:"60 sek"},
+          {name:"Overhead triceps extension", sets:3, reps:"10–12", rest:"60 sek", badge:"Lång huvud"}
+        ]
+      },
+      {
+        name:"Rygg & biceps", day:"Dag 2 — Tisdag", shortTab:"Dag 2 · Rygg",
+        tip:"Dra med armbågarna, inte händerna. Betona excentrisk fas 2–3 sek ned.",
+        exercises:[
+          {name:"Marklyft", sets:4, reps:"4–6", rest:"3 min"},
+          {name:"Viktad chins / latsdrag", sets:4, reps:"6–10", rest:"2 min", badge:"Bredd"},
+          {name:"Skivstångsrowing (Pendlay)", sets:4, reps:"8–10", rest:"90 sek", badge:"Tjocklek"},
+          {name:"Kabelsittande rowing", sets:3, reps:"12–15", rest:"60 sek"},
+          {name:"Skivstångscurl", sets:3, reps:"8–10", rest:"90 sek"},
+          {name:"Hammer curl (hantel)", sets:3, reps:"10–12", rest:"60 sek", badge:"Brachialis"}
+        ]
+      },
+      {
+        name:"Ben & core", day:"Dag 3 — Torsdag", shortTab:"Dag 3 · Ben",
+        tip:"Tyngsta passet. Gå minst till parallellt i knäböj om rörligheten tillåter.",
+        exercises:[
+          {name:"Knäböj (skivstång)", sets:5, reps:"4–6", rest:"3 min"},
+          {name:"Romanian deadlift", sets:4, reps:"8–10", rest:"2 min", badge:"Hamstring"},
+          {name:"Benpress", sets:3, reps:"10–12", rest:"90 sek"},
+          {name:"Leg curl (maskin)", sets:3, reps:"12–15", rest:"60 sek"},
+          {name:"Stående vadpress", sets:4, reps:"15–20", rest:"60 sek"},
+          {name:"Ab wheel / plankan", sets:3, reps:"10–15 / 45 sek", rest:"60 sek", badge:"Core"}
+        ]
+      },
+      {
+        name:"Axlar & armar", day:"Dag 4 — Fredag", shortTab:"Dag 4 · Axlar",
+        tip:"Sidolyft: lyft bara till axelhöjd — högre tar bort spänningen från deltoiden.",
+        exercises:[
+          {name:"Militärpress (skivstång)", sets:4, reps:"6–8", rest:"2 min"},
+          {name:"Hantelpress sittande", sets:3, reps:"10–12", rest:"90 sek"},
+          {name:"Sidolyft (hantel)", sets:4, reps:"15–20", rest:"60 sek", badge:"Sidodelt"},
+          {name:"Face pulls (kabel)", sets:3, reps:"15–20", rest:"60 sek", badge:"Bakre delt"},
+          {name:"Koncentrationscurl", sets:3, reps:"12–15", rest:"60 sek"},
+          {name:"Skull crushers (EZ-stång)", sets:3, reps:"10–12", rest:"60 sek", badge:"Triceps"}
+        ]
+      }
     ]
   },
   {
-    name:"Rygg & biceps", day:"Dag 2 — Tisdag", shortTab:"Dag 2 · Rygg",
-    tip:"Dra med armbågarna, inte händerna. Betona excentrisk fas 2–3 sek ned.",
-    exercises:[
-      {name:"Marklyft", sets:4, reps:"4–6", rest:"3 min"},
-      {name:"Viktad chins / latsdrag", sets:4, reps:"6–10", rest:"2 min", badge:"Bredd"},
-      {name:"Skivstångsrowing (Pendlay)", sets:4, reps:"8–10", rest:"90 sek", badge:"Tjocklek"},
-      {name:"Kabelsittande rowing", sets:3, reps:"12–15", rest:"60 sek"},
-      {name:"Skivstångscurl", sets:3, reps:"8–10", rest:"90 sek"},
-      {name:"Hammer curl (hantel)", sets:3, reps:"10–12", rest:"60 sek", badge:"Brachialis"}
+    id: 'p3',
+    label: '3 Dagars',
+    days: [
+      {
+        name:"Push — Bröst, Axlar & Triceps", day:"Dag 1 — Måndag", shortTab:"Dag 1 · Push",
+        tip:"Push-dagen tränar alla pressande muskler. Börja tungt på bänkpress och bygg upp volymen.",
+        exercises:[
+          {name:"Bänkpress (skivstång)", sets:4, reps:"6–8", rest:"2–3 min"},
+          {name:"Militärpress (skivstång, stående)", sets:4, reps:"6–8", rest:"2 min"},
+          {name:"Lutande hantelpress", sets:3, reps:"8–10", rest:"90 sek", badge:"Övre bröst"},
+          {name:"Sidolyft (hantel)", sets:4, reps:"15–20", rest:"60 sek", badge:"Sidodelt"},
+          {name:"Kabelflugor", sets:3, reps:"12–15", rest:"60 sek", badge:"Isolering bröst"},
+          {name:"Triceps pushdown (kabel)", sets:3, reps:"12–15", rest:"60 sek"},
+          {name:"Overhead triceps extension", sets:3, reps:"10–12", rest:"60 sek", badge:"Lång huvud"}
+        ]
+      },
+      {
+        name:"Pull — Rygg & Biceps", day:"Dag 2 — Onsdag", shortTab:"Dag 2 · Pull",
+        tip:"Fokus på att dra med armbågarna. Betona excentrisk fas 2–3 sek på alla drag-övningar.",
+        exercises:[
+          {name:"Marklyft", sets:4, reps:"4–6", rest:"3 min"},
+          {name:"Viktad chins / latsdrag", sets:4, reps:"6–10", rest:"2 min", badge:"Bredd"},
+          {name:"Skivstångsrowing (Pendlay)", sets:4, reps:"8–10", rest:"90 sek", badge:"Tjocklek"},
+          {name:"Kabelsittande rowing (smalt grepp)", sets:3, reps:"12–15", rest:"60 sek"},
+          {name:"Face pulls (kabel)", sets:3, reps:"15–20", rest:"60 sek", badge:"Bakre delt"},
+          {name:"Skivstångscurl", sets:3, reps:"8–10", rest:"90 sek"},
+          {name:"Hammer curl (hantel)", sets:3, reps:"10–12", rest:"60 sek", badge:"Brachialis"}
+        ]
+      },
+      {
+        name:"Ben & core", day:"Dag 3 — Fredag", shortTab:"Dag 3 · Ben",
+        tip:"Tyngsta passet. Ta en vilodag (tors) innan så du är utvilad till knäböj.",
+        exercises:[
+          {name:"Knäböj (skivstång)", sets:5, reps:"4–6", rest:"3 min"},
+          {name:"Romanian deadlift", sets:4, reps:"8–10", rest:"2 min", badge:"Hamstring"},
+          {name:"Benpress", sets:3, reps:"10–12", rest:"90 sek"},
+          {name:"Leg curl (maskin, liggande)", sets:3, reps:"12–15", rest:"60 sek"},
+          {name:"Bulgariansk utfall (hantel)", sets:3, reps:"10–12 / ben", rest:"90 sek", badge:"Glutes"},
+          {name:"Stående vadpress", sets:4, reps:"15–20", rest:"60 sek"},
+          {name:"Ab wheel / plankan", sets:3, reps:"10–15 / 45 sek", rest:"60 sek", badge:"Core"}
+        ]
+      }
     ]
   },
   {
-    name:"Ben & core", day:"Dag 3 — Torsdag", shortTab:"Dag 3 · Ben",
-    tip:"Tyngsta passet. Gå minst till parallellt i knäböj om rörligheten tillåter.",
-    exercises:[
-      {name:"Knäböj (skivstång)", sets:5, reps:"4–6", rest:"3 min"},
-      {name:"Romanian deadlift", sets:4, reps:"8–10", rest:"2 min", badge:"Hamstring"},
-      {name:"Benpress", sets:3, reps:"10–12", rest:"90 sek"},
-      {name:"Leg curl (maskin)", sets:3, reps:"12–15", rest:"60 sek"},
-      {name:"Stående vadpress", sets:4, reps:"15–20", rest:"60 sek"},
-      {name:"Ab wheel / plankan", sets:3, reps:"10–15 / 45 sek", rest:"60 sek", badge:"Core"}
+    id: 'phb',
+    label: 'Helkropp',
+    days: [
+      {
+        name:"Helkropp A", day:"Helkropp — Pass A", shortTab:"Pass A",
+        tip:"Kör 2–3 reps från failure. Bra komplement till splitprogrammen eller som eget program.",
+        exercises:[
+          {name:"Knäböj (skivstång)", sets:4, reps:"5–6", rest:"3 min", badge:"Ben & glutes"},
+          {name:"Bänkpress (skivstång)", sets:4, reps:"6–8", rest:"2 min", badge:"Bröst & triceps"},
+          {name:"Skivstångsrowing", sets:4, reps:"6–8", rest:"2 min", badge:"Rygg & biceps"},
+          {name:"Militärpress (hantel)", sets:3, reps:"10–12", rest:"90 sek", badge:"Axlar"},
+          {name:"Romanian deadlift", sets:3, reps:"10–12", rest:"90 sek", badge:"Hamstring"},
+          {name:"Sidolyft (hantel)", sets:3, reps:"15–20", rest:"60 sek", badge:"Sidodelt"},
+          {name:"Plankan / ab wheel", sets:3, reps:"30–45 sek", rest:"60 sek", badge:"Core"}
+        ]
+      },
+      {
+        name:"Helkropp B", day:"Helkropp — Pass B", shortTab:"Pass B",
+        tip:"Variera övningarna mot pass A för att träffa musklerna från olika vinklar.",
+        exercises:[
+          {name:"Frontknäböj / goblet squat", sets:4, reps:"8–10", rest:"2 min", badge:"Quad & core"},
+          {name:"Marklyft", sets:4, reps:"4–6", rest:"3 min", badge:"Helkropp"},
+          {name:"Lutande hantelpress", sets:4, reps:"8–10", rest:"90 sek", badge:"Övre bröst"},
+          {name:"Chins / latsdrag", sets:4, reps:"6–10", rest:"2 min", badge:"Bredd rygg"},
+          {name:"Bulgariansk utfall (hantel)", sets:3, reps:"10–12 / ben", rest:"90 sek", badge:"Ben & glutes"},
+          {name:"Face pulls (kabel)", sets:3, reps:"15–20", rest:"60 sek", badge:"Bakre delt"},
+          {name:"Skivstångscurl + triceps pushdown", sets:3, reps:"10–12", rest:"60 sek", badge:"Armar superset"}
+        ]
+      }
     ]
   },
   {
-    name:"Axlar & armar", day:"Dag 4 — Fredag", shortTab:"Dag 4 · Axlar",
-    tip:"Sidolyft: lyft bara till axelhöjd — högre tar bort spänningen från deltoiden.",
-    exercises:[
-      {name:"Militärpress (skivstång)", sets:4, reps:"6–8", rest:"2 min"},
-      {name:"Hantelpress sittande", sets:3, reps:"10–12", rest:"90 sek"},
-      {name:"Sidolyft (hantel)", sets:4, reps:"15–20", rest:"60 sek", badge:"Sidodelt"},
-      {name:"Face pulls (kabel)", sets:3, reps:"15–20", rest:"60 sek", badge:"Bakre delt"},
-      {name:"Koncentrationscurl", sets:3, reps:"12–15", rest:"60 sek"},
-      {name:"Skull crushers (EZ-stång)", sets:3, reps:"10–12", rest:"60 sek", badge:"Triceps"}
-    ]
-  },
-  {
-    name:"Helkropp A", day:"Helkropp — Pass A", shortTab:"Helkropp A", fullbody:true,
-    tip:"Kör 2–3 reps från failure. Bra komplement till 4-dagarsspliten eller som eget 2-dagarsprogram.",
-    exercises:[
-      {name:"Knäböj (skivstång)", sets:4, reps:"5–6", rest:"3 min", badge:"Ben & glutes"},
-      {name:"Bänkpress (skivstång)", sets:4, reps:"6–8", rest:"2 min", badge:"Bröst & triceps"},
-      {name:"Skivstångsrowing", sets:4, reps:"6–8", rest:"2 min", badge:"Rygg & biceps"},
-      {name:"Militärpress (hantel)", sets:3, reps:"10–12", rest:"90 sek", badge:"Axlar"},
-      {name:"Romanian deadlift", sets:3, reps:"10–12", rest:"90 sek", badge:"Hamstring"},
-      {name:"Sidolyft (hantel)", sets:3, reps:"15–20", rest:"60 sek", badge:"Sidodelt"},
-      {name:"Plankan / ab wheel", sets:3, reps:"30–45 sek", rest:"60 sek", badge:"Core"}
-    ]
-  },
-  {
-    name:"Helkropp B", day:"Helkropp — Pass B", shortTab:"Helkropp B", fullbody:true,
-    tip:"Variera övningarna mot pass A för att träffa musklerna från olika vinklar.",
-    exercises:[
-      {name:"Frontknäböj / goblet squat", sets:4, reps:"8–10", rest:"2 min", badge:"Quad & core"},
-      {name:"Marklyft", sets:4, reps:"4–6", rest:"3 min", badge:"Helkropp"},
-      {name:"Lutande hantelpress", sets:4, reps:"8–10", rest:"90 sek", badge:"Övre bröst"},
-      {name:"Chins / latsdrag", sets:4, reps:"6–10", rest:"2 min", badge:"Bredd rygg"},
-      {name:"Bulgariansk utfall (hantel)", sets:3, reps:"10–12 / ben", rest:"90 sek", badge:"Ben & glutes"},
-      {name:"Face pulls (kabel)", sets:3, reps:"15–20", rest:"60 sek", badge:"Bakre delt"},
-      {name:"Skivstångscurl + triceps pushdown", sets:3, reps:"10–12", rest:"60 sek", badge:"Armar superset"}
-    ]
-  },
-  { name:"Mat & näring", day:"", shortTab:"🥩 Mat", food:true }
+    id: 'food',
+    label: '🥩 Mat',
+    food: true
+  }
 ];
 
 var FOOD_HTML = '<div>' +
@@ -203,39 +280,55 @@ var FOOD_HTML = '<div>' +
   '<div class="meal-card"><div class="meal-time">21:00 — Kvällsmål</div><div class="meal-name">Långsamt protein</div><div class="meal-items">250g kesella eller kvarg · bär eller frukt · eventuellt lite nötter</div></div>' +
 '</div>';
 
-var currentDay=0, currentView='log';
-function sKey(di,ei,si,f){return 'gym_d'+di+'_e'+ei+'_s'+si+'_'+f;}
-function hKey(di,ei,si,f){var t=new Date().toISOString().split('T')[0];return 'gym_hist_'+t+'_d'+di+'_e'+ei+'_s'+si+'_'+f;}
-function saveVal(di,ei,si,f,v){try{localStorage.setItem(sKey(di,ei,si,f),v);localStorage.setItem(hKey(di,ei,si,f),v);}catch(e){}}
-function loadVal(di,ei,si,f){try{return localStorage.getItem(sKey(di,ei,si,f))||'';}catch(e){return '';}}
+var currentProg = 0;
+var currentDays = [0, 0, 0, 0];
+var currentView = 'log';
 
-function buildTabs(){
+function sKey(pi,di,ei,si,f){return 'gym_p'+pi+'_d'+di+'_e'+ei+'_s'+si+'_'+f;}
+function hKey(pi,di,ei,si,f){var t=new Date().toISOString().split('T')[0];return 'gym_hist_'+t+'_p'+pi+'_d'+di+'_e'+ei+'_s'+si+'_'+f;}
+function saveVal(pi,di,ei,si,f,v){try{localStorage.setItem(sKey(pi,di,ei,si,f),v);localStorage.setItem(hKey(pi,di,ei,si,f),v);}catch(e){}}
+function loadVal(pi,di,ei,si,f){try{return localStorage.getItem(sKey(pi,di,ei,si,f))||'';}catch(e){return '';}}
+
+function buildProgTabs(){
+  var c=document.getElementById('prog-tabs');
+  c.innerHTML=PROGRAMS.map(function(p,i){
+    return '<button class="prog-tab'+(i===0?' active':'')+'" onclick="switchProg('+i+')">'+p.label+'</button>';
+  }).join('');
+}
+
+function buildDayTabs(){
+  var prog=PROGRAMS[currentProg];
+  var wrap=document.getElementById('day-tabs-wrap');
+  if(prog.food){wrap.style.display='none';return;}
+  wrap.style.display='block';
   var c=document.getElementById('day-tabs');
-  c.innerHTML=DAYS.map(function(d,i){
-    var cls='day-tab'+(i===0?' active':'')+(d.fullbody?' fullbody':'')+(d.food?' food-tab':'');
-    return '<button class="'+cls+'" onclick="switchDay('+i+')">'+d.shortTab+'</button>';
+  var cd=currentDays[currentProg];
+  c.innerHTML=prog.days.map(function(d,i){
+    return '<button class="day-tab'+(i===cd?' active':'')+'" onclick="switchDay('+i+')">'+d.shortTab+'</button>';
   }).join('');
 }
 
 function renderLog(){
-  var main=document.getElementById('main-content'), html='';
-  DAYS.forEach(function(day,di){
-    html+='<div class="day-panel'+(di===currentDay?' active':'')+'" id="panel-'+di+'">';
-    if(day.food){ html+=FOOD_HTML; }
-    else {
-      html+='<div class="day-header"><div class="day-label">'+day.day+'</div><div class="day-name">'+day.name+'</div></div><div class="tip">'+day.tip+'</div>';
-      day.exercises.forEach(function(ex,ei){
-        html+='<div class="exercise-card"><div class="ex-header"><div class="ex-number">'+(ei+1)+'</div><div><div class="ex-name">'+ex.name+'</div><div class="ex-sets-info">'+ex.sets+' set · '+ex.reps+' reps · '+ex.rest+' vila</div>'+(ex.badge?'<span class="badge">'+ex.badge+'</span>':'')+'</div></div>';
-        html+='<div class="sets-grid-header"><div class="col-label">Set</div><div class="col-label">Vikt (kg)</div><div class="col-label">Reps</div></div><div class="sets-grid">';
-        for(var s=0;s<ex.sets;s++){
-          var kg=loadVal(di,ei,s,'kg'),rp=loadVal(di,ei,s,'reps');
-          html+='<div class="set-num">'+(s+1)+'</div>';
-          html+='<input class="set-input'+(kg?' filled':'')+'" type="number" inputmode="decimal" placeholder="—" value="'+kg+'" data-day="'+di+'" data-ex="'+ei+'" data-set="'+s+'" data-field="kg" oninput="handleInput(this)">';
-          html+='<input class="set-input'+(rp?' filled':'')+'" type="number" inputmode="numeric" placeholder="—" value="'+rp+'" data-day="'+di+'" data-ex="'+ei+'" data-set="'+s+'" data-field="reps" oninput="handleInput(this)">';
-        }
-        html+='</div><div class="save-row"><button class="clear-btn" onclick="clearEx('+di+','+ei+')">Rensa</button><span class="saved-indicator" id="saved-'+di+'-'+ei+'">✓ sparat</span></div></div>';
-      });
-    }
+  var main=document.getElementById('main-content');
+  var prog=PROGRAMS[currentProg];
+  if(prog.food){main.innerHTML='<div>'+FOOD_HTML+'</div>';return;}
+  var cd=currentDays[currentProg];
+  var html='';
+  prog.days.forEach(function(day,di){
+    html+='<div class="day-panel'+(di===cd?' active':'')+'" id="panel-'+di+'">';
+    html+='<div class="day-header"><div class="day-label">'+day.day+'</div><div class="day-name">'+day.name+'</div></div>';
+    html+='<div class="tip">'+day.tip+'</div>';
+    day.exercises.forEach(function(ex,ei){
+      html+='<div class="exercise-card"><div class="ex-header"><div class="ex-number">'+(ei+1)+'</div><div><div class="ex-name">'+ex.name+'</div><div class="ex-sets-info">'+ex.sets+' set · '+ex.reps+' reps · '+ex.rest+' vila</div>'+(ex.badge?'<span class="badge">'+ex.badge+'</span>':'')+'</div></div>';
+      html+='<div class="sets-grid-header"><div class="col-label">Set</div><div class="col-label">Vikt (kg)</div><div class="col-label">Reps</div></div><div class="sets-grid">';
+      for(var s=0;s<ex.sets;s++){
+        var kg=loadVal(currentProg,di,ei,s,'kg'),rp=loadVal(currentProg,di,ei,s,'reps');
+        html+='<div class="set-num">'+(s+1)+'</div>';
+        html+='<input class="set-input'+(kg?' filled':'')+'" type="number" inputmode="decimal" placeholder="—" value="'+kg+'" data-prog="'+currentProg+'" data-day="'+di+'" data-ex="'+ei+'" data-set="'+s+'" data-field="kg" oninput="handleInput(this)">';
+        html+='<input class="set-input'+(rp?' filled':'')+'" type="number" inputmode="numeric" placeholder="—" value="'+rp+'" data-prog="'+currentProg+'" data-day="'+di+'" data-ex="'+ei+'" data-set="'+s+'" data-field="reps" oninput="handleInput(this)">';
+      }
+      html+='</div><div class="save-row"><button class="clear-btn" onclick="clearEx('+currentProg+','+di+','+ei+')">Rensa</button><span class="saved-indicator" id="saved-'+currentProg+'-'+di+'-'+ei+'">✓ sparat</span></div></div>';
+    });
     html+='</div>';
   });
   main.innerHTML=html;
@@ -255,18 +348,21 @@ function renderHistory(){
       html+='<div style="margin-bottom:20px"><div style="font-family:var(--mono);font-size:12px;color:var(--muted);margin-bottom:10px">'+formatDate(date)+'</div>';
       var logged={};
       dates[date].forEach(function(k){
-        var m=k.match(/gym_hist_[\d-]+_d(\d+)_e(\d+)_s(\d+)_(\w+)/);
+        var m=k.match(/gym_hist_[\d-]+_p(\d+)_d(\d+)_e(\d+)_s(\d+)_(\w+)/);
         if(!m)return;
-        var key2=m[1]+'_'+m[2]+'_'+m[3];
-        if(!logged[key2])logged[key2]={di:m[1],ei:m[2],si:m[3]};
-        try{logged[key2][m[4]]=localStorage.getItem(k);}catch(e){}
+        var key2=m[1]+'_'+m[2]+'_'+m[3]+'_'+m[4];
+        if(!logged[key2])logged[key2]={pi:m[1],di:m[2],ei:m[3],si:m[4]};
+        try{logged[key2][m[5]]=localStorage.getItem(k);}catch(e){}
       });
       var grouped={};
-      Object.values(logged).forEach(function(e){var gk=e.di+'_'+e.ei;if(!grouped[gk])grouped[gk]={di:e.di,ei:e.ei,sets:[]};grouped[gk].sets.push(e);});
+      Object.values(logged).forEach(function(e){var gk=e.pi+'_'+e.di+'_'+e.ei;if(!grouped[gk])grouped[gk]={pi:e.pi,di:e.di,ei:e.ei,sets:[]};grouped[gk].sets.push(e);});
       Object.values(grouped).forEach(function(g){
-        var day=DAYS[g.di];if(!day||day.food)return;
-        var ex=day.exercises&&day.exercises[g.ei];if(!ex)return;
-        html+='<div class="exercise-card" style="margin-bottom:8px"><div class="ex-name" style="margin-bottom:8px">'+ex.name+'</div>';
+        var prog=PROGRAMS[g.pi];if(!prog||prog.food)return;
+        var day=prog.days[g.di];if(!day)return;
+        var ex=day.exercises[g.ei];if(!ex)return;
+        html+='<div class="exercise-card" style="margin-bottom:8px">';
+        html+='<div style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-bottom:4px">'+prog.label+' · '+day.shortTab+'</div>';
+        html+='<div class="ex-name" style="margin-bottom:8px">'+ex.name+'</div>';
         g.sets.sort(function(a,b){return a.si-b.si;}).forEach(function(s){
           if(s.kg||s.reps)html+='<div style="display:flex;gap:8px;font-family:var(--mono);font-size:13px;color:var(--muted);margin-bottom:4px"><span style="color:#444">Set '+(parseInt(s.si)+1)+'</span>'+(s.kg?'<span style="color:var(--accent)">'+s.kg+' kg</span>':'')+' '+(s.reps?'<span>'+s.reps+' reps</span>':'')+'</div>';
         });
@@ -279,30 +375,45 @@ function renderHistory(){
 }
 
 function formatDate(d){return new Date(d+'T12:00:00').toLocaleDateString('sv-SE',{weekday:'long',day:'numeric',month:'long'});}
+
 function handleInput(el){
-  var di=el.dataset.day,ei=el.dataset.ex,si=el.dataset.set,f=el.dataset.field;
-  saveVal(di,ei,si,f,el.value);
+  var pi=el.dataset.prog,di=el.dataset.day,ei=el.dataset.ex,si=el.dataset.set,f=el.dataset.field;
+  saveVal(pi,di,ei,si,f,el.value);
   el.classList.toggle('filled',!!el.value);
-  var ind=document.getElementById('saved-'+di+'-'+ei);
+  var ind=document.getElementById('saved-'+pi+'-'+di+'-'+ei);
   if(ind){ind.classList.add('show');setTimeout(function(){ind.classList.remove('show');},1500);}
 }
-function clearEx(di,ei){
-  var ex=DAYS[di].exercises[ei];
+
+function clearEx(pi,di,ei){
+  var prog=PROGRAMS[pi];if(!prog||prog.food)return;
+  var ex=prog.days[di].exercises[ei];
   for(var s=0;s<ex.sets;s++){
-    try{localStorage.removeItem(sKey(di,ei,s,'kg'));localStorage.removeItem(sKey(di,ei,s,'reps'));}catch(e){}
-    ['kg','reps'].forEach(function(f){var el=document.querySelector('input[data-day="'+di+'"][data-ex="'+ei+'"][data-set="'+s+'"][data-field="'+f+'"]');if(el){el.value='';el.classList.remove('filled');}});
+    try{localStorage.removeItem(sKey(pi,di,ei,s,'kg'));localStorage.removeItem(sKey(pi,di,ei,s,'reps'));}catch(e){}
+    ['kg','reps'].forEach(function(f){var el=document.querySelector('input[data-prog="'+pi+'"][data-day="'+di+'"][data-ex="'+ei+'"][data-set="'+s+'"][data-field="'+f+'"]');if(el){el.value='';el.classList.remove('filled');}});
   }
 }
+
+function switchProg(idx){
+  currentProg=idx;
+  document.querySelectorAll('.prog-tab').forEach(function(t,i){t.classList.toggle('active',i===idx);});
+  buildDayTabs();
+  if(currentView==='log')renderLog();
+}
+
 function switchDay(idx){
-  currentDay=idx;
+  currentDays[currentProg]=idx;
   document.querySelectorAll('.day-tab').forEach(function(t,i){t.classList.toggle('active',i===idx);});
   document.querySelectorAll('.day-panel').forEach(function(p,i){p.classList.toggle('active',i===idx);});
 }
+
 function setView(view){
   currentView=view;
   document.querySelectorAll('.nav-btn').forEach(function(b,i){b.classList.toggle('active',(i===0&&view==='log')||(i===1&&view==='history'));});
-  if(view==='log')renderLog();else renderHistory();
+  var wrap=document.getElementById('day-tabs-wrap');
+  if(view==='history'){wrap.style.display='none';renderHistory();}
+  else{buildDayTabs();renderLog();}
 }
+
 function updateStreak(){
   try{
     var today=new Date().toISOString().split('T')[0];
@@ -318,11 +429,8 @@ function updateStreak(){
   }catch(e){}
 }
 
-if('serviceWorker' in navigator){
-  navigator.serviceWorker.register('sw.js').catch(function(){});
-}
-
-buildTabs(); updateStreak(); renderLog();
+if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js').catch(function(){});}
+buildProgTabs(); buildDayTabs(); updateStreak(); renderLog();
 </script>
 </body>
 </html>
