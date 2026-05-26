@@ -5,11 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#0f0f0f">
 <title>Träningsdagbok</title>
 <link rel="manifest" href="manifest.json">
-<link rel="apple-touch-icon" href="icon.svg">
 <style>
   @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600&display=swap');
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -19,31 +17,24 @@
     --radius: 12px; --font: 'DM Sans', sans-serif; --mono: 'DM Mono', monospace;
   }
   html, body { background: var(--bg); color: var(--text); font-family: var(--font); min-height: 100vh; -webkit-font-smoothing: antialiased; }
-
-  /* TOP NAV */
   header { position: sticky; top: 0; z-index: 100; background: var(--bg); border-bottom: 1px solid var(--border); padding: 14px 16px 0; }
   .header-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
   .logo { font-family: var(--mono); font-size: 13px; color: var(--accent); letter-spacing: .08em; text-transform: uppercase; }
   .streak { font-family: var(--mono); font-size: 12px; color: var(--muted); }
-
-  /* PROGRAM TABS (top level) */
-  .prog-tabs { display: flex; gap: 0; border-bottom: 1px solid var(--border); margin: 0 -16px; }
-  .prog-tab { flex: 1; padding: 10px 6px; font-family: var(--font); font-size: 12px; font-weight: 500; color: var(--muted); background: transparent; border: none; border-bottom: 2px solid transparent; cursor: pointer; transition: all .15s; text-align: center; white-space: nowrap; }
+  .prog-tabs { display: flex; gap: 0; border-bottom: 1px solid var(--border); margin: 0 -16px; overflow-x: auto; scrollbar-width: none; }
+  .prog-tabs::-webkit-scrollbar { display: none; }
+  .prog-tab { flex-shrink: 0; flex: 1; min-width: 70px; padding: 10px 6px; font-family: var(--font); font-size: 12px; font-weight: 500; color: var(--muted); background: transparent; border: none; border-bottom: 2px solid transparent; cursor: pointer; transition: all .15s; text-align: center; white-space: nowrap; }
   .prog-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
-
-  /* DAY TABS (second level) */
   .day-tabs-wrap { padding: 12px 16px 0; background: var(--bg); position: sticky; top: 89px; z-index: 99; border-bottom: 1px solid var(--border); }
   .day-tabs { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; padding-bottom: 12px; }
   .day-tabs::-webkit-scrollbar { display: none; }
   .day-tab { flex-shrink: 0; padding: 7px 14px; border-radius: 999px; border: 1px solid var(--border); background: transparent; color: var(--muted); font-family: var(--font); font-size: 13px; font-weight: 500; cursor: pointer; transition: all .15s; white-space: nowrap; }
   .day-tab.active { background: var(--accent); border-color: var(--accent); color: #0f0f0f; }
-
   main { padding: 16px 16px 100px; }
   .prog-panel { display: none; }
   .prog-panel.active { display: block; }
   .day-panel { display: none; }
   .day-panel.active { display: block; }
-
   .day-header { margin-bottom: 12px; }
   .day-label { font-family: var(--mono); font-size: 11px; color: var(--accent); letter-spacing: .1em; text-transform: uppercase; margin-bottom: 4px; }
   .day-name { font-size: 22px; font-weight: 600; color: var(--text); line-height: 1.2; }
@@ -67,30 +58,41 @@
   .saved-indicator.show { opacity: 1; }
   .tip { margin: 4px 0 16px; padding: 10px 14px; background: var(--surface); border-left: 2px solid var(--accent); font-size: 13px; color: var(--muted); line-height: 1.5; }
 
-  /* FOOD */
-  .food-intro { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; margin-bottom: 16px; }
-  .food-intro-title { font-size: 17px; font-weight: 600; color: var(--text); margin-bottom: 6px; }
-  .food-intro-text { font-size: 13px; color: var(--muted); line-height: 1.6; }
+  /* FOOD & RECIPES */
+  .food-section-title { font-family: var(--mono); font-size: 11px; color: var(--accent); letter-spacing: .1em; text-transform: uppercase; margin: 20px 0 10px; }
   .macro-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 16px; }
   .macro-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px; }
   .macro-num { font-family: var(--mono); font-size: 22px; font-weight: 500; color: var(--accent); }
   .macro-unit { font-family: var(--mono); font-size: 12px; color: var(--accent-dim); }
   .macro-label { font-size: 12px; color: var(--muted); margin-top: 4px; }
-  .food-section-title { font-family: var(--mono); font-size: 11px; color: var(--accent); letter-spacing: .1em; text-transform: uppercase; margin: 20px 0 10px; }
-  .food-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; margin-bottom: 8px; display: flex; align-items: flex-start; gap: 12px; }
-  .food-icon { font-size: 24px; flex-shrink: 0; width: 36px; text-align: center; }
-  .food-name { font-size: 15px; font-weight: 500; color: var(--text); margin-bottom: 3px; }
-  .food-desc { font-size: 13px; color: var(--muted); line-height: 1.5; }
-  .food-macro-row { display: flex; gap: 8px; margin-top: 6px; flex-wrap: wrap; }
-  .food-badge { font-size: 11px; font-family: var(--mono); padding: 2px 8px; border-radius: 999px; border: 1px solid; }
-  .food-badge.prot { color: #c8f135; border-color: #3a4a1a; background: #1a2410; }
-  .food-badge.carb { color: #f1a335; border-color: #4a3a1a; background: #241e10; }
-  .food-badge.fat  { color: #a3c8f1; border-color: #1a3a4a; background: #101c24; }
-  .meal-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; margin-bottom: 8px; }
-  .meal-time { font-family: var(--mono); font-size: 11px; color: var(--accent); letter-spacing: .08em; margin-bottom: 6px; }
-  .meal-name { font-size: 15px; font-weight: 500; color: var(--text); margin-bottom: 4px; }
-  .meal-items { font-size: 13px; color: var(--muted); line-height: 1.7; }
   .tip-food { margin: 0 0 16px; padding: 10px 14px; background: var(--surface); border-left: 2px solid #c87835; font-size: 13px; color: var(--muted); line-height: 1.5; }
+
+  /* PROTEIN SOURCE ACCORDION */
+  .protein-source { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 10px; overflow: hidden; }
+  .protein-header { display: flex; align-items: center; gap: 12px; padding: 14px 16px; cursor: pointer; }
+  .protein-icon { font-size: 26px; flex-shrink: 0; }
+  .protein-title-wrap { flex: 1; }
+  .protein-name { font-size: 16px; font-weight: 600; color: var(--text); }
+  .protein-sub { font-size: 12px; color: var(--muted); font-family: var(--mono); margin-top: 2px; }
+  .protein-arrow { font-size: 14px; color: var(--muted); transition: transform .2s; }
+  .protein-arrow.open { transform: rotate(180deg); }
+  .protein-recipes { display: none; border-top: 1px solid var(--border); }
+  .protein-recipes.open { display: block; }
+  .recipe-item { padding: 14px 16px; border-bottom: 1px solid var(--border); }
+  .recipe-item:last-child { border-bottom: none; }
+  .recipe-name { font-size: 14px; font-weight: 600; color: var(--accent-dim); margin-bottom: 6px; }
+  .recipe-ing-title { font-size: 11px; font-family: var(--mono); color: var(--muted); text-transform: uppercase; letter-spacing: .08em; margin: 8px 0 4px; }
+  .recipe-ing { font-size: 13px; color: var(--muted); line-height: 1.7; }
+  .recipe-steps-title { font-size: 11px; font-family: var(--mono); color: var(--muted); text-transform: uppercase; letter-spacing: .08em; margin: 8px 0 4px; }
+  .recipe-step { font-size: 13px; color: var(--muted); line-height: 1.6; margin-bottom: 4px; display: flex; gap: 8px; }
+  .recipe-step-num { font-family: var(--mono); font-size: 11px; color: var(--accent); flex-shrink: 0; margin-top: 2px; }
+  .recipe-macros { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
+  .rmac { font-size: 11px; font-family: var(--mono); padding: 2px 8px; border-radius: 999px; border: 1px solid #3a4a1a; background: #1a2410; color: #c8f135; }
+
+  /* OVERNIGHT OATS */
+  .oats-intro { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; margin-bottom: 16px; }
+  .oats-intro-title { font-size: 17px; font-weight: 600; color: var(--text); margin-bottom: 6px; }
+  .oats-intro-text { font-size: 13px; color: var(--muted); line-height: 1.6; }
 
   .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: var(--bg); border-top: 1px solid var(--border); padding: 10px 16px 20px; display: flex; gap: 8px; }
   .nav-btn { flex: 1; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 12px 8px; font-family: var(--font); font-size: 12px; font-weight: 500; color: var(--muted); cursor: pointer; text-align: center; }
@@ -117,11 +119,9 @@
 <script>
 var PROGRAMS = [
   {
-    id: 'p4',
-    label: '4 Dagars',
-    days: [
-      {
-        name:"Bröst & triceps", day:"Dag 1 — Måndag", shortTab:"Dag 1 · Bröst",
+    id:'p4', label:'4 Dagars',
+    days:[
+      { name:"Bröst & triceps", day:"Dag 1 — Måndag", shortTab:"Dag 1 · Bröst",
         tip:"Öka vikten 2–5 kg när du klarar övre repgränsen stabilt i alla set.",
         exercises:[
           {name:"Bänkpress (skivstång)", sets:4, reps:"6–8", rest:"2–3 min"},
@@ -130,10 +130,8 @@ var PROGRAMS = [
           {name:"Dips (viktad)", sets:3, reps:"8–12", rest:"90 sek"},
           {name:"Triceps pushdown (kabel)", sets:3, reps:"12–15", rest:"60 sek"},
           {name:"Overhead triceps extension", sets:3, reps:"10–12", rest:"60 sek", badge:"Lång huvud"}
-        ]
-      },
-      {
-        name:"Rygg & biceps", day:"Dag 2 — Tisdag", shortTab:"Dag 2 · Rygg",
+        ]},
+      { name:"Rygg & biceps", day:"Dag 2 — Tisdag", shortTab:"Dag 2 · Rygg",
         tip:"Dra med armbågarna, inte händerna. Betona excentrisk fas 2–3 sek ned.",
         exercises:[
           {name:"Marklyft", sets:4, reps:"4–6", rest:"3 min"},
@@ -142,10 +140,8 @@ var PROGRAMS = [
           {name:"Kabelsittande rowing", sets:3, reps:"12–15", rest:"60 sek"},
           {name:"Skivstångscurl", sets:3, reps:"8–10", rest:"90 sek"},
           {name:"Hammer curl (hantel)", sets:3, reps:"10–12", rest:"60 sek", badge:"Brachialis"}
-        ]
-      },
-      {
-        name:"Ben & core", day:"Dag 3 — Torsdag", shortTab:"Dag 3 · Ben",
+        ]},
+      { name:"Ben & core", day:"Dag 3 — Torsdag", shortTab:"Dag 3 · Ben",
         tip:"Tyngsta passet. Gå minst till parallellt i knäböj om rörligheten tillåter.",
         exercises:[
           {name:"Knäböj (skivstång)", sets:5, reps:"4–6", rest:"3 min"},
@@ -154,10 +150,8 @@ var PROGRAMS = [
           {name:"Leg curl (maskin)", sets:3, reps:"12–15", rest:"60 sek"},
           {name:"Stående vadpress", sets:4, reps:"15–20", rest:"60 sek"},
           {name:"Ab wheel / plankan", sets:3, reps:"10–15 / 45 sek", rest:"60 sek", badge:"Core"}
-        ]
-      },
-      {
-        name:"Axlar & armar", day:"Dag 4 — Fredag", shortTab:"Dag 4 · Axlar",
+        ]},
+      { name:"Axlar & armar", day:"Dag 4 — Fredag", shortTab:"Dag 4 · Axlar",
         tip:"Sidolyft: lyft bara till axelhöjd — högre tar bort spänningen från deltoiden.",
         exercises:[
           {name:"Militärpress (skivstång)", sets:4, reps:"6–8", rest:"2 min"},
@@ -166,16 +160,13 @@ var PROGRAMS = [
           {name:"Face pulls (kabel)", sets:3, reps:"15–20", rest:"60 sek", badge:"Bakre delt"},
           {name:"Koncentrationscurl", sets:3, reps:"12–15", rest:"60 sek"},
           {name:"Skull crushers (EZ-stång)", sets:3, reps:"10–12", rest:"60 sek", badge:"Triceps"}
-        ]
-      }
+        ]}
     ]
   },
   {
-    id: 'p3',
-    label: '3 Dagars',
-    days: [
-      {
-        name:"Push — Bröst, Axlar & Triceps", day:"Dag 1 — Måndag", shortTab:"Dag 1 · Push",
+    id:'p3', label:'3 Dagars',
+    days:[
+      { name:"Push — Bröst, Axlar & Triceps", day:"Dag 1 — Måndag", shortTab:"Dag 1 · Push",
         tip:"Push-dagen tränar alla pressande muskler. Börja tungt på bänkpress och bygg upp volymen.",
         exercises:[
           {name:"Bänkpress (skivstång)", sets:4, reps:"6–8", rest:"2–3 min"},
@@ -185,10 +176,8 @@ var PROGRAMS = [
           {name:"Kabelflugor", sets:3, reps:"12–15", rest:"60 sek", badge:"Isolering bröst"},
           {name:"Triceps pushdown (kabel)", sets:3, reps:"12–15", rest:"60 sek"},
           {name:"Overhead triceps extension", sets:3, reps:"10–12", rest:"60 sek", badge:"Lång huvud"}
-        ]
-      },
-      {
-        name:"Pull — Rygg & Biceps", day:"Dag 2 — Onsdag", shortTab:"Dag 2 · Pull",
+        ]},
+      { name:"Pull — Rygg & Biceps", day:"Dag 2 — Onsdag", shortTab:"Dag 2 · Pull",
         tip:"Fokus på att dra med armbågarna. Betona excentrisk fas 2–3 sek på alla drag-övningar.",
         exercises:[
           {name:"Marklyft", sets:4, reps:"4–6", rest:"3 min"},
@@ -198,10 +187,8 @@ var PROGRAMS = [
           {name:"Face pulls (kabel)", sets:3, reps:"15–20", rest:"60 sek", badge:"Bakre delt"},
           {name:"Skivstångscurl", sets:3, reps:"8–10", rest:"90 sek"},
           {name:"Hammer curl (hantel)", sets:3, reps:"10–12", rest:"60 sek", badge:"Brachialis"}
-        ]
-      },
-      {
-        name:"Ben & core", day:"Dag 3 — Fredag", shortTab:"Dag 3 · Ben",
+        ]},
+      { name:"Ben & core", day:"Dag 3 — Fredag", shortTab:"Dag 3 · Ben",
         tip:"Tyngsta passet. Ta en vilodag (tors) innan så du är utvilad till knäböj.",
         exercises:[
           {name:"Knäböj (skivstång)", sets:5, reps:"4–6", rest:"3 min"},
@@ -211,16 +198,13 @@ var PROGRAMS = [
           {name:"Bulgariansk utfall (hantel)", sets:3, reps:"10–12 / ben", rest:"90 sek", badge:"Glutes"},
           {name:"Stående vadpress", sets:4, reps:"15–20", rest:"60 sek"},
           {name:"Ab wheel / plankan", sets:3, reps:"10–15 / 45 sek", rest:"60 sek", badge:"Core"}
-        ]
-      }
+        ]}
     ]
   },
   {
-    id: 'phb',
-    label: 'Helkropp',
-    days: [
-      {
-        name:"Helkropp A", day:"Helkropp — Pass A", shortTab:"Pass A",
+    id:'phb', label:'Helkropp',
+    days:[
+      { name:"Helkropp A", day:"Helkropp — Pass A", shortTab:"Pass A",
         tip:"Kör 2–3 reps från failure. Bra komplement till splitprogrammen eller som eget program.",
         exercises:[
           {name:"Knäböj (skivstång)", sets:4, reps:"5–6", rest:"3 min", badge:"Ben & glutes"},
@@ -230,10 +214,8 @@ var PROGRAMS = [
           {name:"Romanian deadlift", sets:3, reps:"10–12", rest:"90 sek", badge:"Hamstring"},
           {name:"Sidolyft (hantel)", sets:3, reps:"15–20", rest:"60 sek", badge:"Sidodelt"},
           {name:"Plankan / ab wheel", sets:3, reps:"30–45 sek", rest:"60 sek", badge:"Core"}
-        ]
-      },
-      {
-        name:"Helkropp B", day:"Helkropp — Pass B", shortTab:"Pass B",
+        ]},
+      { name:"Helkropp B", day:"Helkropp — Pass B", shortTab:"Pass B",
         tip:"Variera övningarna mot pass A för att träffa musklerna från olika vinklar.",
         exercises:[
           {name:"Frontknäböj / goblet squat", sets:4, reps:"8–10", rest:"2 min", badge:"Quad & core"},
@@ -243,46 +225,222 @@ var PROGRAMS = [
           {name:"Bulgariansk utfall (hantel)", sets:3, reps:"10–12 / ben", rest:"90 sek", badge:"Ben & glutes"},
           {name:"Face pulls (kabel)", sets:3, reps:"15–20", rest:"60 sek", badge:"Bakre delt"},
           {name:"Skivstångscurl + triceps pushdown", sets:3, reps:"10–12", rest:"60 sek", badge:"Armar superset"}
-        ]
-      }
+        ]}
+    ]
+  },
+  { id:'food', label:'🥩 Mat', food:true },
+  { id:'oats', label:'🥣 Oats', oats:true }
+];
+
+// ---- PROTEIN SOURCES DATA ----
+var PROTEINS = [
+  {
+    icon:'🍗', name:'Kycklingfilé', sub:'~31g protein / 100g · låg fett',
+    recipes:[
+      { name:'Teriyaki kyckling med ris',
+        ing:'200g kycklingfilé · 3 msk sojasås · 1 msk honung · 1 tsk sesamolja · 1 vitlöksklyfta · 150g ris',
+        steps:['Blanda soja, honung, sesamolja och pressad vitlök till marinaden.','Skär kycklingen i bitar och marinera 15 min.','Stek på hög värme 3–4 min per sida tills genomstekt.','Servera med kokt ris och resten av marinaden som sås.'],
+        macros:'~55g protein · ~60g kolhydrater' },
+      { name:'Grillad kyckling med sötpotatis',
+        ing:'200g kycklingfilé · 1 sötpotatis · olivolja · paprikapulver · vitlökspulver · salt',
+        steps:['Skär sötpotatis i klyftor, rosta i ugn 200° i 25 min med olja och salt.','Krydda kycklingen med paprika och vitlökspulver.','Grilla eller stek kycklingen 5–6 min per sida.','Servera med sötpotatisklyftorna och en klick kvarg.'],
+        macros:'~52g protein · ~40g kolhydrater' },
+      { name:'Kycklingsoppa med nudlar',
+        ing:'200g kycklingfilé · 2 dl kycklingbuljong · 100g nudlar · morot · purjolök · ingefära · soja',
+        steps:['Koka upp buljongen med skivad morot, purjolök och riven ingefära.','Lägg i kycklingfilén hel och sjud 15 min.','Ta upp kycklingen och dra isär i strimlor.','Koka nudlarna i soppan, lägg tillbaka kycklingen och smaka av med soja.'],
+        macros:'~50g protein · ~45g kolhydrater' },
+      { name:'Kycklingwok med grönsaker',
+        ing:'200g kycklingfilé · paprika · broccoli · lök · soja · ostronsås · sesamfrön · ris',
+        steps:['Skär kyckling och grönsaker i bitar.','Hetta upp wokpanna på max värme med lite olja.','Woka kycklingen 3 min, lägg sedan i grönsakerna.','Tillsätt soja och ostronsås, woka ytterligare 2 min. Servera med ris.'],
+        macros:'~54g protein · ~50g kolhydrater' },
+      { name:'Kyckling med pesto och pasta',
+        ing:'200g kycklingfilé · 100g pasta · 2 msk grön pesto · körsbärstomater · parmesan · basilika',
+        steps:['Koka pastan enligt förpackning.','Stek kycklingen i olja tills gyllenbrun, ca 5 min per sida.','Skär kycklingen i skivor.','Blanda varm pasta med pesto, tomater och kyckling. Riv över parmesan.'],
+        macros:'~55g protein · ~55g kolhydrater' }
     ]
   },
   {
-    id: 'food',
-    label: '🥩 Mat',
-    food: true
+    icon:'🥩', name:'Nötkött / biff', sub:'~26g protein / 100g · järn & zink',
+    recipes:[
+      { name:'Klassisk biff med potatismos',
+        ing:'200g nötstek eller ryggbiff · 2 potatisar · smör · mjölk · lök · salt & peppar',
+        steps:['Koka potatisen mjuk, mosa med smör och mjölk.','Salta och peppra biffen ordentligt.','Stek på hög värme 2–3 min per sida för medium.','Servera med potatismos och stekt lök.'],
+        macros:'~52g protein · ~35g kolhydrater' },
+      { name:'Nötköttsgryta med rotfrukter',
+        ing:'300g grytbitar av nöt · morot · palsternacka · lök · tomat · köttbuljong · timjan · lagerblad',
+        steps:['Bryn köttet i omgångar på hög värme.','Fräs lök och rotfrukter, tillsätt köttet.','Häll på buljong och tomat, lägg i timjan och lagerblad.','Låt puttra under lock i 1,5–2 timmar tills köttet är mört.'],
+        macros:'~60g protein · ~20g kolhydrater' },
+      { name:'Tacos med nötkött',
+        ing:'300g nötfärs · tacokrydda · tortillas · salsa · sallad · cheddar · crème fraîche · lime',
+        steps:['Bryn nötfärsen, häll av fettet.','Tillsätt tacokrydda och lite vatten, sjud 5 min.','Värm tortillorna i torr stekpanna.','Fyll med kött och övriga tillbehör efter smak.'],
+        macros:'~55g protein · ~40g kolhydrater' },
+      { name:'Asiatisk nötköttsrör med ris',
+        ing:'200g nötfilé eller innanlår · paprika · broccoli · soja · oystronsås · ingefära · vitlök · ris',
+        steps:['Skär köttet tunt mot fibrerna.','Blanda soja, ostronsås, ingefära och vitlök.','Wokas köttet 1–2 min på max värme, lägg åt sidan.','Woka grönsakerna, lägg tillbaka köttet och häll på såsen. Servera med ris.'],
+        macros:'~50g protein · ~50g kolhydrater' },
+      { name:'Hamburgare med sötpotatisfrites',
+        ing:'300g nötfärs · hamburgerbrös · sallad · tomat · cheddar · senap · ketchup · sötpotatis',
+        steps:['Forma burgare av nötfärsen, krydda med salt och peppar.','Skär sötpotatis i stavar och rosta i ugn 200° i 25 min.','Grilla burgarna 4 min per sida.','Bygg burgaren med tillbehör och servera med sötpotatisfrites.'],
+        macros:'~58g protein · ~55g kolhydrater' }
+    ]
+  },
+  {
+    icon:'🍖', name:'Köttfärs', sub:'~20g protein / 100g · billigt & smidigt',
+    recipes:[
+      { name:'Köttfärssås med pasta',
+        ing:'400g nötfärs · 1 burk krossade tomater · lök · vitlök · oregano · basilika · pasta · parmesan',
+        steps:['Fräs lök och vitlök mjukt i olivolja.','Bryn färsen, salta och peppra.','Tillsätt krossade tomater och örter, sjud 20 min.','Servera med kokt pasta och riven parmesan.'],
+        macros:'~60g protein · ~65g kolhydrater' },
+      { name:'Köttbullar med gräddsås',
+        ing:'400g nötfärs · 1 ägg · ströbröd · lök · mjölk · salt · peppar · grädde · buljong · soja',
+        steps:['Blanda färs, ägg, ströbröd, hackad lök och mjölk. Smaka av.','Rulla till bollar och stek i smör tills genomstekta.','Gör sås av stekfettet, buljong, grädde och lite soja.','Servera med potatismos och lingonsylt.'],
+        macros:'~55g protein · ~30g kolhydrater' },
+      { name:'Köttfärspaj',
+        ing:'400g nötfärs · 1 pajskal · 3 ägg · 2 dl grädde · lök · paprika · ost · timjan',
+        steps:['Förbaka pajskalet 10 min i 200°.','Bryn färsen med lök och paprika, krydda.','Blanda ägg och grädde, rör ner färsen.','Häll i pajskalet, toppa med ost och grädda 30 min i 180°.'],
+        macros:'~65g protein · ~25g kolhydrater' },
+      { name:'Mexikansk köttfärsgryta',
+        ing:'400g nötfärs · 1 burk kidney-bönor · 1 burk majs · krossade tomater · chipotle · lök · vitlök · ris',
+        steps:['Bryn färsen med lök och vitlök.','Tillsätt bönor, majs, tomater och chipotle.','Sjud 15 min tills gryta tjocknar.','Servera med ris och eventuellt tortillachips.'],
+        macros:'~58g protein · ~70g kolhydrater' },
+      { name:'Köttfärslimpa med rostad potatis',
+        ing:'500g nötfärs · 2 ägg · 1 dl ströbröd · lök · senap · ketchup · soja · potatis',
+        steps:['Blanda ihop alla ingredienser till köttfärslimp, forma till en limpa.','Bred senap och ketchup ovanpå.','Grädda i ugn 175° i 45–50 min.','Rosta potatisen med olivolja och salt i ugnen samtidigt.'],
+        macros:'~70g protein · ~45g kolhydrater' }
+    ]
+  },
+  {
+    icon:'🐟', name:'Lax', sub:'~20g protein / 100g · omega-3',
+    recipes:[
+      { name:'Ugnsrostad lax med potatis',
+        ing:'200g laxfilé · 2 potatisar · citron · dill · smör · salt · peppar · gräddfil',
+        steps:['Skär potatisen i klyftor och rosta i ugn 200° i 20 min.','Lägg laxen på bakplåtspapper, krydda med salt, peppar och citron.','Tillaga laxen i ugn 200° i 12–15 min.','Servera med potatisen, gräddfil och dill.'],
+        macros:'~44g protein · ~35g kolhydrater' },
+      { name:'Teriyaki-lax med ris och edamame',
+        ing:'200g laxfilé · 3 msk sojasås · 1 msk honung · 1 tsk sesamolja · vitlök · ris · edamame',
+        steps:['Blanda teriyakimarinad av soja, honung och sesamolja.','Marinera laxen 10 min.','Stek laxen med skinnsidan nedåt 4 min, vänd och stek 2 min.','Servera med ris, edamame och resten av marinaden.'],
+        macros:'~46g protein · ~55g kolhydrater' },
+      { name:'Laxpasta med spenat och citron',
+        ing:'200g laxfilé · 100g pasta · spenat · grädde · citron · vitlök · parmesan · dill',
+        steps:['Koka pastan. Stek laxen och dela i bitar.','Fräs vitlöken, tillsätt grädde och citronsaft.','Lägg i spenaten tills den precis mjuknar.','Blanda pasta, sås och lax. Toppa med parmesan och dill.'],
+        macros:'~48g protein · ~55g kolhydrater' },
+      { name:'Asiatisk laxbowl',
+        ing:'200g laxfilé · ris · avokado · gurka · edamame · soja · sesamolja · sesamfrön · ingefära',
+        steps:['Koka ris och låt svalna lite.','Stek eller grilla laxen, dela i bitar.','Skiva avokado och gurka.','Arrangera ris, lax och grönsaker i skål. Ringla soja och sesamolja över.'],
+        macros:'~46g protein · ~50g kolhydrater' },
+      { name:'Laxsoppa med kokosmjölk',
+        ing:'200g laxfilé · 1 burk kokosmjölk · kycklingbuljong · citrongräs · ingefära · lime · koriander · chili · ris',
+        steps:['Koka upp buljong med kokosmjölk, citrongräs, ingefära och chili.','Sjud 10 min för att dra ut smakerna.','Lägg i laxen i bitar och sjud 5 min.','Smaka av med limejuice, servera med ris och koriander.'],
+        macros:'~42g protein · ~40g kolhydrater' }
+    ]
+  },
+  {
+    icon:'🥚', name:'Ägg', sub:'~13g protein / 100g · bra fetter & vitaminer',
+    recipes:[
+      { name:'Äggröra med fullkornsbröd',
+        ing:'4 ägg · 1 msk smör · 2 msk crème fraîche · gräslök · salt · peppar · 2 skivor fullkornsbröd',
+        steps:['Vispa ihop ägg och crème fraîche.','Smält smör i panna på medelvärme.','Rör äggen långsamt med en slickepott tills just stelnat — ta av innan helt klara.','Servera på bröd med gräslök och peppar.'],
+        macros:'~28g protein · ~30g kolhydrater' },
+      { name:'Omelett med kyckling och grönsaker',
+        ing:'3 ägg · 100g kokt kyckling · paprika · spenat · lök · ost · salt · peppar · olivolja',
+        steps:['Vispa ägg med salt och peppar.','Fräs lök och paprika i panna, tillsätt kycklingen.','Häll äggsmeten över, lägg på spenat och ost.','Vik omelletten och servera direkt.'],
+        macros:'~42g protein · ~8g kolhydrater' },
+      { name:'Hårdkokta ägg med risnudlar',
+        ing:'4 ägg · 100g risnudlar · soja · sesamolja · gurka · morot · lime · chili · jordnötter',
+        steps:['Koka ägg hårdkokta i 9 min, kyl och skala.','Blötlägg risnudlarna enligt förpackning.','Strimla gurka och morot fint.','Blanda nudlar, grönsaker och dressing av soja, sesamolja och limejuice. Toppa med halerade ägg och krossade jordnötter.'],
+        macros:'~30g protein · ~45g kolhydrater' },
+      { name:'Shakshuka',
+        ing:'4 ägg · 1 burk krossade tomater · paprika · lök · vitlök · spiskummin · paprikapulver · fetaost · bröd',
+        steps:['Fräs lök, vitlök och paprika mjukt.','Tillsätt tomater och kryddor, sjud 10 min.','Gör gropar i såsen och knäck ner äggen.','Lägg på lock och sjud tills äggvitorna stelnat men gulorna fortfarande är rinniga. Toppa med fetaost.'],
+        macros:'~26g protein · ~25g kolhydrater' },
+      { name:'Äggmuffins med bacon och ost',
+        ing:'6 ägg · 4 skivor bacon · 50g cheddar · paprika · spenat · salt · peppar',
+        steps:['Sätt ugnen på 180°. Smörj en muffinsfrom.','Fräs bacon och paprika, fördela i formarna.','Vispa ägg med salt och peppar, häll i formarna.','Toppa med ost och grädda 15–18 min. Perfekt att meal-prepa!'],
+        macros:'~35g protein · ~3g kolhydrater' }
+    ]
+  },
+  {
+    icon:'🐟', name:'Tonfisk', sub:'~26g protein / 100g · billig & snabb',
+    recipes:[
+      { name:'Tonfiskpasta',
+        ing:'1 burk tonfisk i vatten · 100g pasta · crème fraîche · citron · kapris · dill · salt · peppar',
+        steps:['Koka pastan. Låt rinna av.','Blanda varm pasta med crème fraîche och citronsaft.','Rör ner den avrunna tonfisken och kapris.','Smaka av med salt och peppar, toppa med dill.'],
+        macros:'~45g protein · ~55g kolhydrater' },
+      { name:'Tonfisksallad med ägg',
+        ing:'2 burkar tonfisk · 2 hårdkokta ägg · majonnäs · senap · rödlök · cornichons · sallad · bröd',
+        steps:['Blanda tonfisk, hackad rödlök och cornichons.','Rör ner majonnäs och senap till önskad konsistens.','Lägg på salladsblad med skivade ägg.','Servera med rågbröd eller knäckebröd.'],
+        macros:'~50g protein · ~25g kolhydrater' },
+      { name:'Tonfiskwraps',
+        ing:'2 burkar tonfisk · 2 tortillas · avokado · rödlök · tomat · spenat · lime · sriracha',
+        steps:['Mosa avokado med lime och salt till guacamole.','Blanda tonfisk med hackad rödlök och sriracha.','Lägg guacamole, tonfisk, tomat och spenat på tortillan.','Rulla ihop tätt och dela på mitten.'],
+        macros:'~48g protein · ~35g kolhydrater' },
+      { name:'Tonfiskris bowl',
+        ing:'2 burkar tonfisk · 150g ris · gurka · edamame · avokado · soja · sesamolja · sesamfrön',
+        steps:['Koka riset.','Skiva gurka och avokado.','Blanda dressing av soja och sesamolja.','Arrangera ris, tonfisk och grönsaker i skål. Ringla dressing över och strö sesamfrön.'],
+        macros:'~52g protein · ~55g kolhydrater' },
+      { name:'Tonfiskömelette',
+        ing:'3 ägg · 1 burk tonfisk · paprika · lök · ost · salt · peppar · olivolja',
+        steps:['Vispa ägg med salt och peppar.','Fräs lök och paprika, tillsätt avrunnen tonfisk.','Häll äggsmeten över, lägg på ost.','Vik omelletten och servera direkt.'],
+        macros:'~50g protein · ~5g kolhydrater' }
+    ]
+  },
+  {
+    icon:'🫙', name:'Kvarg & kesella', sub:'~10–12g protein / 100g · casein',
+    recipes:[
+      { name:'Kvargbowl med bär och granola',
+        ing:'300g kvarg · 100g blandade bär · 3 msk granola · 1 msk honung · kanel',
+        steps:['Häll upp kvarg i en skål.','Toppa med bär och granola.','Ringla honung och strö lite kanel.','Perfekt frukost eller kvällsmål — klart på 2 min!'],
+        macros:'~35g protein · ~40g kolhydrater' },
+      { name:'Proteinpannkakor med kvarg',
+        ing:'200g kvarg · 2 ägg · 50g havregryn · 1 banan · kanel · vaniljextrakt · smör',
+        steps:['Mixa alla ingredienser till en slät smet.','Stek på medelvärme i smör, ca 2–3 min per sida.','Servera med bär, kvarg och lite lönnsirap.','Ger ca 8 pannkakor — bra att meal-prepa!'],
+        macros:'~40g protein · ~45g kolhydrater' },
+      { name:'Kesellasmoothie',
+        ing:'200g kesella · 1 banan · 150g frysta bär · 2 dl mjölk · 1 msk jordnötssmör · honung',
+        steps:['Lägg alla ingredienser i en blender.','Mixa tills helt slät.','Häll upp i ett glas.','Drick direkt eller ta med i en shaker till jobbet.'],
+        macros:'~38g protein · ~55g kolhydrater' },
+      { name:'Kvarg med lax och knäckebröd',
+        ing:'200g kvarg · 100g rökt lax · 4 knäckebröd · dill · citron · kapris · rödlök',
+        steps:['Blanda kvarg med dill och citronsaft.','Bred kvargen på knäckebröden.','Lägg på rökt lax, kapris och tunt skivad rödlök.','Enkelt och proteinrikt mellanmål eller lunch.'],
+        macros:'~42g protein · ~25g kolhydrater' },
+      { name:'Fryst kesellakräm',
+        ing:'400g kesella · 2 msk honung · 100g bär · 30g mörk choklad · vanilj',
+        steps:['Blanda kesella med honung och vanilj.','Rör ner krossad mörk choklad och hälften av bären.','Häll i en form och lägg på resten av bären.','Frys i 2–3 timmar — ta ut 10 min innan servering.'],
+        macros:'~40g protein · ~30g kolhydrater' }
+    ]
   }
 ];
 
-var FOOD_HTML = '<div>' +
-  '<div class="day-header"><div class="day-label">Kost för snickare</div><div class="day-name">Mat & näring</div></div>' +
-  '<div class="food-intro"><div class="food-intro-title">Anpassat för ditt jobb 💪</div><div class="food-intro-text">Som snickare förbrukar du redan mycket energi på jobbet. Du behöver extra kolhydrater för att orka hela dagen OCH ha energi till gymmet. Sikta på 2 g protein per kg kroppsvikt och generöst med kolhydrater.</div></div>' +
-  '<div class="macro-grid"><div class="macro-card"><div class="macro-num">2 <span class="macro-unit">g/kg</span></div><div class="macro-label">Protein per dag</div></div><div class="macro-card"><div class="macro-num">4–5 <span class="macro-unit">g/kg</span></div><div class="macro-label">Kolhydrater per dag</div></div><div class="macro-card"><div class="macro-num">5–6</div><div class="macro-label">Mål per dag</div></div><div class="macro-card"><div class="macro-num">+400<span class="macro-unit"> kcal</span></div><div class="macro-label">Överskott för tillväxt</div></div></div>' +
-  '<div class="food-section-title">Bästa proteinkällorna</div>' +
-  '<div class="food-card"><div class="food-icon">🍗</div><div><div class="food-name">Kycklingfilé</div><div class="food-desc">Mager, billig och mångsidig. Grilla en stor sats på söndagen — räcker hela veckan.</div><div class="food-macro-row"><span class="food-badge prot">31g protein/100g</span><span class="food-badge fat">låg fett</span></div></div></div>' +
-  '<div class="food-card"><div class="food-icon">🥚</div><div><div class="food-name">Ägg</div><div class="food-desc">Perfekt frukost eller mellanmål. 3–4 ägg ger bra protein och håller dig mätt länge på jobbet.</div><div class="food-macro-row"><span class="food-badge prot">13g protein/100g</span><span class="food-badge fat">bra fetter</span></div></div></div>' +
-  '<div class="food-card"><div class="food-icon">🐟</div><div><div class="food-name">Lax & makrill</div><div class="food-desc">Fet fisk ger omega-3 som minskar inflammation — viktigt när kroppen sliter både på jobb och i gymmet.</div><div class="food-macro-row"><span class="food-badge prot">20–25g protein/100g</span><span class="food-badge fat">omega-3</span></div></div></div>' +
-  '<div class="food-card"><div class="food-icon">🥩</div><div><div class="food-name">Nötkött / färs</div><div class="food-desc">Bra protein och kreatin som finns naturligt. Köttbullar eller köttfärssås är enkelt att laga i stor sats.</div><div class="food-macro-row"><span class="food-badge prot">26g protein/100g</span><span class="food-badge fat">järn & zink</span></div></div></div>' +
-  '<div class="food-card"><div class="food-icon">🫙</div><div><div class="food-name">Kvarg & kesella</div><div class="food-desc">Perfekt kvällsmål. Caseinprotein bryts ned långsamt — matar musklerna hela natten.</div><div class="food-macro-row"><span class="food-badge prot">10–12g protein/100g</span></div></div></div>' +
-  '<div class="food-section-title">Bästa kolhydratkällorna</div>' +
-  '<div class="food-card"><div class="food-icon">🍚</div><div><div class="food-name">Ris</div><div class="food-desc">Snickararens bästa vän. Koka 4–5 portioner på en gång, funkar till allt och ger stabil energi hela dagen.</div><div class="food-macro-row"><span class="food-badge carb">28g kolhydrater/100g kokt</span></div></div></div>' +
-  '<div class="food-card"><div class="food-icon">🥣</div><div><div class="food-name">Havregryn</div><div class="food-desc">Bästa frukosten — långsamma kolhydrater som håller energin uppe hela förmiddagen på bygget.</div><div class="food-macro-row"><span class="food-badge carb">60g kolhydrater/100g</span><span class="food-badge prot">13g protein/100g</span></div></div></div>' +
-  '<div class="food-card"><div class="food-icon">🍞</div><div><div class="food-name">Fullkornsbröd</div><div class="food-desc">Enkelt och smidigt. Ta med smörgåsar med kycklingskiva eller ägg till jobbet.</div><div class="food-macro-row"><span class="food-badge carb">40g kolhydrater/100g</span></div></div></div>' +
-  '<div class="food-card"><div class="food-icon">🥔</div><div><div class="food-name">Potatis & sötpotatis</div><div class="food-desc">Billigt, mättande och fullt av kolhydrater. Sötpotatis ger också bra vitaminer för återhämtning.</div><div class="food-macro-row"><span class="food-badge carb">17–20g kolhydrater/100g</span></div></div></div>' +
-  '<div class="food-card"><div class="food-icon">🍌</div><div><div class="food-name">Banan</div><div class="food-desc">Perfekt innan gymmet eller som rast på jobbet. Snabba kolhydrater + kalium mot kramper.</div><div class="food-macro-row"><span class="food-badge carb">23g kolhydrater/st</span></div></div></div>' +
-  '<div class="food-section-title">Exempel — dagsmeny för snickare</div>' +
-  '<div class="tip-food">Anpassa portionsstorlekarna efter din kroppsvikt. Är du 80 kg siktar du på ca 160g protein och 320–400g kolhydrater per dag.</div>' +
-  '<div class="meal-card"><div class="meal-time">06:00 — Frukost</div><div class="meal-name">Havregrynsgröt med ägg</div><div class="meal-items">80g havregryn med mjölk · 3 ägg (scrambled) · 1 banan · kaffe</div></div>' +
-  '<div class="meal-card"><div class="meal-time">09:30 — Rast på jobbet</div><div class="meal-name">Smörgås & kvarg</div><div class="meal-items">2 skivor fullkornsbröd med kycklingskiva · 200g kvarg med lite honung</div></div>' +
-  '<div class="meal-card"><div class="meal-time">12:00 — Lunch</div><div class="meal-name">Ris med kyckling</div><div class="meal-items">200g kycklingfilé · 150g ris (kokt) · grönsaker · olivolja</div></div>' +
-  '<div class="meal-card"><div class="meal-time">15:00 — Rast / pre-workout</div><div class="meal-name">Snabb energi</div><div class="meal-items">1 banan · handfull nötter · eventuellt en proteinbar</div></div>' +
-  '<div class="meal-card"><div class="meal-time">17:30 — Efter gymmet</div><div class="meal-name">Stor middag</div><div class="meal-items">200g nötfärs eller lax · sötpotatis eller pasta · grönsaker · mjölk</div></div>' +
-  '<div class="meal-card"><div class="meal-time">21:00 — Kvällsmål</div><div class="meal-name">Långsamt protein</div><div class="meal-items">250g kesella eller kvarg · bär eller frukt · eventuellt lite nötter</div></div>' +
-'</div>';
+// ---- OVERNIGHT OATS DATA ----
+var OATS_RECIPES = [
+  { name:'Klassisk vanilj & bär',
+    ing:'80g havregryn · 2 dl mjölk (eller havremjölk) · 150g kvarg · 1 skopa vaniljproteinpulver · 100g blandade bär · 1 tsk honung',
+    steps:['Blanda havregryn, mjölk, kvarg och proteinpulver i en burk med lock.','Rör om ordentligt tills allt är blandat.','Ställ i kylen över natten (minst 6 timmar).','På morgonen: toppa med bär och honung. Klart att ta med!'],
+    macros:'~45g protein · ~65g kolhydrater · ~500 kcal',
+    tip:'Förbered 3–4 burkar på söndagen — räcker hela veckan!' },
+  { name:'Choklad & jordnötssmör',
+    ing:'80g havregryn · 2 dl mjölk · 150g kvarg · 1 skopa chokladproteinpulver · 2 msk jordnötssmör · 1 banan · kakaoströssel',
+    steps:['Blanda havregryn, mjölk, kvarg och chokladproteinpulver.','Rör ner jordnötssmöret och blanda väl.','Ställ i kylen över natten.','Toppa med skivad banan och kakaoströssel på morgonen.'],
+    macros:'~48g protein · ~75g kolhydrater · ~560 kcal',
+    tip:'Jordnötssmöret ger nyttiga fetter och håller dig mätt längre på bygget.' },
+  { name:'Banan & kanel',
+    ing:'80g havregryn · 2 dl mjölk · 1 banan (mosad) · 150g kvarg · 1 msk honung · 1 tsk kanel · 30g valnötter',
+    steps:['Mosa bananen och blanda med havregryn, mjölk och kvarg.','Tillsätt honung och kanel, rör om väl.','Ställ i kylen över natten.','Toppa med valnötter och extra kanel på morgonen.'],
+    macros:'~38g protein · ~70g kolhydrater · ~520 kcal',
+    tip:'Bananen ger naturlig sötma — behöver knappt extra socker.' },
+  { name:'Blåbär & chiafrön',
+    ing:'80g havregryn · 2 dl havremjölk · 2 msk chiafrön · 150g kvarg · 100g blåbär (frysta) · 1 msk lönnsirap · 1 skopa proteinpulver',
+    steps:['Blanda havregryn, havremjölk, chiafrön och proteinpulver.','Rör ner kvarg och lönnsirap.','Lägg frysta blåbär ovanpå — de tinar under natten.','Ställ i kylen minst 6 timmar. Rör om på morgonen.'],
+    macros:'~42g protein · ~65g kolhydrater · ~510 kcal',
+    tip:'Chiafrön ger omega-3 och gör konsistensen extra krämig.' },
+  { name:'Apple pie oats',
+    ing:'80g havregryn · 2 dl mjölk · 150g kvarg · 1 äpple (rivet) · 1 tsk kanel · 1/2 tsk kardemumma · 2 msk lönnsirap · 30g pekannötter',
+    steps:['Riv äpplet grovt (med skalet).','Blanda havregryn, mjölk, kvarg, rivet äpple och kryddor.','Tillsätt lönnsirap och rör om väl.','Ställ i kylen över natten. Toppa med pekannötter på morgonen.'],
+    macros:'~36g protein · ~72g kolhydrater · ~530 kcal',
+    tip:'Smakar som äppelkaka — perfekt höstfrukost!' }
+];
 
-var currentProg = 0;
-var currentDays = [0, 0, 0, 0];
-var currentView = 'log';
+var currentProg=0, currentDays=[0,0,0,0,0], currentView='log';
 
 function sKey(pi,di,ei,si,f){return 'gym_p'+pi+'_d'+di+'_e'+ei+'_s'+si+'_'+f;}
 function hKey(pi,di,ei,si,f){var t=new Date().toISOString().split('T')[0];return 'gym_hist_'+t+'_p'+pi+'_d'+di+'_e'+ei+'_s'+si+'_'+f;}
@@ -299,7 +457,7 @@ function buildProgTabs(){
 function buildDayTabs(){
   var prog=PROGRAMS[currentProg];
   var wrap=document.getElementById('day-tabs-wrap');
-  if(prog.food){wrap.style.display='none';return;}
+  if(prog.food||prog.oats){wrap.style.display='none';return;}
   wrap.style.display='block';
   var c=document.getElementById('day-tabs');
   var cd=currentDays[currentProg];
@@ -308,10 +466,66 @@ function buildDayTabs(){
   }).join('');
 }
 
+function renderFood(){
+  var html='<div>';
+  html+='<div class="day-header"><div class="day-label">Kost för snickare</div><div class="day-name">Mat & Recept</div></div>';
+  html+='<div class="tip-food" style="margin-bottom:16px">Som snickare förbrukar du mycket energi på jobbet. Sikta på 2g protein per kg kroppsvikt. Tryck på en proteinkälla för att se recept!</div>';
+  html+='<div class="macro-grid"><div class="macro-card"><div class="macro-num">2 <span class="macro-unit">g/kg</span></div><div class="macro-label">Protein per dag</div></div><div class="macro-card"><div class="macro-num">4–5 <span class="macro-unit">g/kg</span></div><div class="macro-label">Kolhydrater per dag</div></div></div>';
+  html+='<div class="food-section-title">Välj proteinkälla</div>';
+  PROTEINS.forEach(function(p,pi){
+    html+='<div class="protein-source">';
+    html+='<div class="protein-header" onclick="toggleProtein('+pi+')">';
+    html+='<div class="protein-icon">'+p.icon+'</div>';
+    html+='<div class="protein-title-wrap"><div class="protein-name">'+p.name+'</div><div class="protein-sub">'+p.sub+'</div></div>';
+    html+='<div class="protein-arrow" id="arrow-'+pi+'">▼</div>';
+    html+='</div>';
+    html+='<div class="protein-recipes" id="recipes-'+pi+'">';
+    p.recipes.forEach(function(r,ri){
+      html+='<div class="recipe-item">';
+      html+='<div class="recipe-name">'+r.name+'</div>';
+      html+='<div class="recipe-ing-title">Ingredienser</div>';
+      html+='<div class="recipe-ing">'+r.ing+'</div>';
+      html+='<div class="recipe-steps-title">Tillagning</div>';
+      r.steps.forEach(function(s,si){
+        html+='<div class="recipe-step"><span class="recipe-step-num">'+(si+1)+'.</span><span>'+s+'</span></div>';
+      });
+      html+='<div class="recipe-macros"><span class="rmac">'+r.macros+'</span></div>';
+      html+='</div>';
+    });
+    html+='</div></div>';
+  });
+  html+='</div>';
+  return html;
+}
+
+function renderOats(){
+  var html='<div>';
+  html+='<div class="day-header"><div class="day-label">Frukost & prep</div><div class="day-name">Overnight Oats</div></div>';
+  html+='<div class="oats-intro"><div class="oats-intro-title">Perfekt för snickaren 🥣</div><div class="oats-intro-text">Förbered kvällen innan — klart på morgonen. Tar 2 minuter att blanda och ger massor av protein och kolhydrater för en lång arbetsdag. Gör 3–4 burkar på söndagen!</div></div>';
+  html+='<div class="macro-grid"><div class="macro-card"><div class="macro-num">35–50<span class="macro-unit">g</span></div><div class="macro-label">Protein per portion</div></div><div class="macro-card"><div class="macro-num">2 <span class="macro-unit">min</span></div><div class="macro-label">Tillagningstid</div></div></div>';
+  html+='<div class="food-section-title">5 Recept</div>';
+  OATS_RECIPES.forEach(function(r){
+    html+='<div class="exercise-card" style="margin-bottom:12px">';
+    html+='<div class="recipe-name" style="font-size:15px;margin-bottom:8px">'+r.name+'</div>';
+    html+='<div class="recipe-ing-title">Ingredienser</div>';
+    html+='<div class="recipe-ing" style="margin-bottom:8px">'+r.ing+'</div>';
+    html+='<div class="recipe-steps-title">Gör så här</div>';
+    r.steps.forEach(function(s,si){
+      html+='<div class="recipe-step"><span class="recipe-step-num">'+(si+1)+'.</span><span style="font-size:13px;color:var(--muted);line-height:1.6">'+s+'</span></div>';
+    });
+    html+='<div class="recipe-macros" style="margin-top:8px"><span class="rmac">'+r.macros+'</span></div>';
+    html+='<div style="margin-top:8px;padding:8px 12px;background:var(--surface2);border-radius:8px;font-size:12px;color:var(--muted)">💡 '+r.tip+'</div>';
+    html+='</div>';
+  });
+  html+='</div>';
+  return html;
+}
+
 function renderLog(){
   var main=document.getElementById('main-content');
   var prog=PROGRAMS[currentProg];
-  if(prog.food){main.innerHTML='<div>'+FOOD_HTML+'</div>';return;}
+  if(prog.food){main.innerHTML=renderFood();return;}
+  if(prog.oats){main.innerHTML=renderOats();return;}
   var cd=currentDays[currentProg];
   var html='';
   prog.days.forEach(function(day,di){
@@ -334,6 +548,14 @@ function renderLog(){
   main.innerHTML=html;
 }
 
+function toggleProtein(pi){
+  var r=document.getElementById('recipes-'+pi);
+  var a=document.getElementById('arrow-'+pi);
+  var open=r.classList.contains('open');
+  r.classList.toggle('open',!open);
+  a.classList.toggle('open',!open);
+}
+
 function renderHistory(){
   var main=document.getElementById('main-content');
   var html='<div style="padding-top:8px"><div style="font-family:var(--mono);font-size:11px;color:var(--accent);letter-spacing:.1em;text-transform:uppercase;margin-bottom:16px">Träningshistorik</div>';
@@ -343,7 +565,7 @@ function renderHistory(){
   allKeys.forEach(function(k){var p=k.split('_');var d=p[2];if(!dates[d])dates[d]=[];dates[d].push(k);});
   var sorted=Object.keys(dates).sort().reverse();
   if(!sorted.length){html+='<div style="color:var(--muted);font-size:14px;margin-top:40px;text-align:center">Inga sparade pass ännu.<br><br>Logga ditt första pass!</div>';}
-  else {
+  else{
     sorted.forEach(function(date){
       html+='<div style="margin-bottom:20px"><div style="font-family:var(--mono);font-size:12px;color:var(--muted);margin-bottom:10px">'+formatDate(date)+'</div>';
       var logged={};
@@ -357,7 +579,7 @@ function renderHistory(){
       var grouped={};
       Object.values(logged).forEach(function(e){var gk=e.pi+'_'+e.di+'_'+e.ei;if(!grouped[gk])grouped[gk]={pi:e.pi,di:e.di,ei:e.ei,sets:[]};grouped[gk].sets.push(e);});
       Object.values(grouped).forEach(function(g){
-        var prog=PROGRAMS[g.pi];if(!prog||prog.food)return;
+        var prog=PROGRAMS[g.pi];if(!prog||prog.food||prog.oats)return;
         var day=prog.days[g.di];if(!day)return;
         var ex=day.exercises[g.ei];if(!ex)return;
         html+='<div class="exercise-card" style="margin-bottom:8px">';
@@ -375,7 +597,6 @@ function renderHistory(){
 }
 
 function formatDate(d){return new Date(d+'T12:00:00').toLocaleDateString('sv-SE',{weekday:'long',day:'numeric',month:'long'});}
-
 function handleInput(el){
   var pi=el.dataset.prog,di=el.dataset.day,ei=el.dataset.ex,si=el.dataset.set,f=el.dataset.field;
   saveVal(pi,di,ei,si,f,el.value);
@@ -383,29 +604,25 @@ function handleInput(el){
   var ind=document.getElementById('saved-'+pi+'-'+di+'-'+ei);
   if(ind){ind.classList.add('show');setTimeout(function(){ind.classList.remove('show');},1500);}
 }
-
 function clearEx(pi,di,ei){
-  var prog=PROGRAMS[pi];if(!prog||prog.food)return;
+  var prog=PROGRAMS[pi];if(!prog||prog.food||prog.oats)return;
   var ex=prog.days[di].exercises[ei];
   for(var s=0;s<ex.sets;s++){
     try{localStorage.removeItem(sKey(pi,di,ei,s,'kg'));localStorage.removeItem(sKey(pi,di,ei,s,'reps'));}catch(e){}
     ['kg','reps'].forEach(function(f){var el=document.querySelector('input[data-prog="'+pi+'"][data-day="'+di+'"][data-ex="'+ei+'"][data-set="'+s+'"][data-field="'+f+'"]');if(el){el.value='';el.classList.remove('filled');}});
   }
 }
-
 function switchProg(idx){
   currentProg=idx;
   document.querySelectorAll('.prog-tab').forEach(function(t,i){t.classList.toggle('active',i===idx);});
   buildDayTabs();
   if(currentView==='log')renderLog();
 }
-
 function switchDay(idx){
   currentDays[currentProg]=idx;
   document.querySelectorAll('.day-tab').forEach(function(t,i){t.classList.toggle('active',i===idx);});
   document.querySelectorAll('.day-panel').forEach(function(p,i){p.classList.toggle('active',i===idx);});
 }
-
 function setView(view){
   currentView=view;
   document.querySelectorAll('.nav-btn').forEach(function(b,i){b.classList.toggle('active',(i===0&&view==='log')||(i===1&&view==='history'));});
@@ -413,7 +630,6 @@ function setView(view){
   if(view==='history'){wrap.style.display='none';renderHistory();}
   else{buildDayTabs();renderLog();}
 }
-
 function updateStreak(){
   try{
     var today=new Date().toISOString().split('T')[0];
@@ -428,7 +644,6 @@ function updateStreak(){
     if(streak>1)document.getElementById('streak-display').textContent='🔥 '+streak+' dagar';
   }catch(e){}
 }
-
 if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js').catch(function(){});}
 buildProgTabs(); buildDayTabs(); updateStreak(); renderLog();
 </script>
