@@ -286,16 +286,32 @@ function renderFood(){
   return html;
 }
 
+var recipeCounter=0;
 function renderRecipeItem(r,isUser,pi,ri){
+  var id='rec-'+(recipeCounter++);
   var html='<div class="recipe-item'+(isUser?' user-added':'')+'">';
-  if(isUser) html+='<button class="delete-recipe-btn" onclick="deleteUserRecipe('+pi+','+ri+')">✕</button>';
-  html+='<div class="recipe-name">'+r.name+'</div>';
+  html+='<div style="display:flex;align-items:center;justify-content:space-between;cursor:pointer" onclick="toggleRecipe(\''+id+'\')">';
+  html+='<div class="recipe-name" style="margin:0">'+r.name+'</div>';
+  html+='<div style="display:flex;align-items:center;gap:8px">';
+  if(isUser) html+='<button class="delete-recipe-btn" style="position:static" onclick="event.stopPropagation();deleteUserRecipe('+pi+','+ri+')">✕</button>';
+  html+='<span id="'+id+'-arrow" style="font-size:13px;color:var(--muted);transition:transform .2s;display:inline-block">▼</span>';
+  html+='</div></div>';
+  html+='<div id="'+id+'" style="display:none;margin-top:12px">';
   html+='<div class="recipe-ing-title">Ingredienser</div><div class="recipe-ing">'+r.ing+'</div>';
   html+='<div class="recipe-steps-title">Tillagning</div>';
   r.steps.forEach(function(s,si){html+='<div class="recipe-step"><span class="recipe-step-num">'+(si+1)+'.</span><span>'+s+'</span></div>';});
   html+='<div class="recipe-macros"><span class="rmac">'+r.macros+'</span></div>';
   html+='</div>';
+  html+='</div>';
   return html;
+}
+function toggleRecipe(id){
+  var el=document.getElementById(id);
+  var arrow=document.getElementById(id+'-arrow');
+  if(!el)return;
+  var open=el.style.display==='block';
+  el.style.display=open?'none':'block';
+  if(arrow)arrow.style.transform=open?'':'rotate(180deg)';
 }
 
 function saveApiKey(){
